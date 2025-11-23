@@ -1,0 +1,5 @@
+/qt-everywhere*
+*.tar.xz
+/artifacts
+/build
+/out
