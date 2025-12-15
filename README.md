@@ -9,8 +9,6 @@ These builds are distributed under the terms of Qt's license. The build script i
 ## TODO
 
 - cross comp
-- docs on deps?
-- windows
 - CPU opts; e.g. build for your specific CPU :)
 
 ## deps
