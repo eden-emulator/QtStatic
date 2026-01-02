@@ -50,7 +50,7 @@ configure() {
 		-DCMAKE_CXX_FLAGS="$FLAGS -O3 -g0" -DCMAKE_C_FLAGS="$FLAGS -O3 -g0" \
 		-optimize-size -no-feature-icu -release -no-zstd -no-feature-qml-network -no-feature-libresolv \
 		-DCMAKE_OSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET}" \
-		-nomake tests -nomake examples -no-compile-examples \
+		-nomake tests -nomake examples \
 		-no-feature-sql -no-feature-xml -no-feature-dbus -no-feature-printdialog -no-feature-printer
 
 		"$*"
