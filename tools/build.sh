@@ -13,6 +13,14 @@ set -e
 
 ## Build Functions ##
 
+[ -z "$SCCACHE_PATH" ] && SCCACHE_PATH=$(which sccache || which ccache || echo "")
+
+show_stats() {
+	if [ -n "$SCCACHE_PATH" ]; then
+		"$SCCACHE_PATH" --show-stats
+	fi
+}
+
 # cmake
 configure() {
 	echo "-- Configuring $PRETTY_NAME..."
@@ -67,8 +75,8 @@ configure() {
 
 build() {
     echo "-- Building $PRETTY_NAME..."
-    cmake --build . --parallel || { "${SCCACHE_PATH}" --show-stats; exit 1; }
-	"${SCCACHE_PATH}" --show-stats
+    cmake --build . --parallel || { show_stats; exit 1; }
+	show_stats
 }
 
 ## Packaging ##

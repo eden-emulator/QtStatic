@@ -207,26 +207,6 @@ jobs:
       PLATFORM: linux
 
     steps:
-      # - name: Maximize build space
-      #   run: |
-      #     echo "-- Free Space before:"
-      #     df -h
-
-      #     echo "$DOTNET_ROOT"
-
-      #     echo "-- Dotnet"
-      #     sudo rm -rf /usr/share/dotnet
-      #     sudo rm -rf /usr/local/share/dotnet # ???
-      #     echo "-- Android"
-      #     sudo rm -rf /usr/local/lib/android
-      #     echo "-- Haskell"
-      #     sudo rm -rf /opt/ghc
-      #     sudo rm -rf /usr/local/.ghcup
-      #     echo "-- CodeQL"
-      #     sudo rm -rf /opt/hostedtoolcache/CodeQL
-
-      #     echo "-- Free Space after:"
-      #     df -h
 
       - name: Maximize build space
         uses: AdityaGarg8/remove-unwanted-software@v5
@@ -254,7 +234,9 @@ jobs:
         run: docker exec arch-build ./deps/linux.sh
 
       - name: Build
-        run: docker exec arch-build sh -c 'PLATFORM=linux ARCH=${{ matrix.arch }} SCCACHE_PATH=$(which ccache) SCCACHE_GHA_ENABLED=true CCACHE=true ./tools/build.sh'
+        run: |
+          docker exec arch-build --env-file "$GITHUB_ENV" env
+          docker exec arch-build --env-file "$GITHUB_ENV" sh -c 'SCCACHE_PATH=$(which sccache) ./tools/build.sh'
 
       - name: Copy artifacts from container
         run: |
