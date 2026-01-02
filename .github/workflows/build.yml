@@ -228,7 +228,7 @@ jobs:
         run: docker exec arch-build ./deps/linux.sh
 
       - name: Build
-        run: docker exec arch-build ./tools/build.sh
+        run: docker exec arch-build PLATFORM=${{ matrix.platform }} ARCH=${{ matrix.arch }} ./tools/build.sh
 
       - name: Copy artifacts from container
         run: |
