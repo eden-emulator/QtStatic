@@ -22,16 +22,20 @@ configure() {
 		FLAGS="/O2 /Oy /EHs- /EHc- /DYNAMICBASE:NO"
 	fi
 
+	if [ "$CCACHE" = true ]; then
+		set -- "$@" CMAKE_CXX_COMPILER_LAUNCHER="${SCCACHE_PATH}" CMAKE_C_COMPILER_LAUNCHER="${SCCACHE_PATH}"
+	fi
+
 	# These are the recommended configuration options from Qt
 	# We also skip snca like quick3d, activeqt, etc.
 	# Also disable zstd, icu, and renderdoc; these are useless
 	# and cause more issues than they solve.
 	./configure -static -ltcg -reduce-exports -gc-binaries \
-		-submodules qtbase,qtdeclarative,qttools,qtnetwork \
+		-submodules qtbase,qtdeclarative,qttools \
 		-skip qtlanguageserver,qtquicktimeline,qtactiveqt,qtquick3d,qtquick3dphysics \
 		-DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" \
 		-optimize-size -no-feature-icu -release -no-zstd -no-feature-qml-network \
-		-DCMAKE_OSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET}"
+		-DCMAKE_OSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET}" "$*"
 }
 
 build() {
