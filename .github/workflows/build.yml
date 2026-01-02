@@ -37,16 +37,6 @@ jobs:
         with:
           arch: ${{ matrix.os.arch }}
 
-      - name: Setup Minimal MSYS2 environment
-        uses: msys2/setup-msys2@v2
-        id: msys2
-        if: matrix.platform == 'windows'
-        with:
-          msystem: ${{ matrix.os.msystem }}
-          update: true
-          install: >-
-            git make unzip pkgconf diffutils
-
       - name: Setup MSYS2 environment
         uses: msys2/setup-msys2@v2
         if: matrix.platform == 'mingw'
@@ -65,49 +55,13 @@ jobs:
 
       - name: Build (MSVC)
         if: matrix.platform == 'windows'
-        shell: cmd
         run: |
-          :: Friendly reminder: your shitty build system is NOT better than CMake!
-          :: Because of FFmpeg's horrific build system, we have to use this awful hack where we implant msvc tools
-          :: into PATH and run this shit through some shell passthrough fuckery.
-          ${{ steps.msys2.outputs.msys2-location }}\msys2_shell.cmd -no-start -defterm -here -msys -shell bash -c "PLATFORM=${{ matrix.platform }} ./tools/build.sh"
+          PLATFORM=${{ matrix.platform }} ./tools/build.sh
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.platform }}-${{ matrix.os.arch }}
-          path: artifacts/*
-
-  android:
-    name: "Android (${{ matrix.arch }})"
-    runs-on: ubuntu-latest
-
-    strategy:
-      fail-fast: false
-      matrix:
-        arch: [x86_64, aarch64]
-
-    env:
-      PLATFORM: android
-      ARCH: ${{ matrix.arch }}
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install deps
-        if: matrix.arch == 'x86_64'
-        run: sudo apt install -y nasm
-
-      - name: Build
-        shell: bash
-        run: |
-          chmod a+x ./tools/build.sh
-          ./tools/build.sh
-
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-${{ matrix.arch }}
           path: artifacts/*
 
   unix:
