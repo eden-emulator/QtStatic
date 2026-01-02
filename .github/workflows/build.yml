@@ -55,9 +55,8 @@ jobs:
         if: matrix.platform == 'windows'
         run: |
           choco install zstandard
-          ls "C:/Program Files/Microsoft Visual Studio/2022/Community/DIA SDK"
-          ls "C:/Program Files/Microsoft Visual Studio/2022/Community/DIA SDK/lib"
-          ls "C:/Program Files/Microsoft Visual Studio/2022/Community/DIA SDK/lib/${{ matrix.arch }}"
+          # WHAT THE FUCK
+          mklink /D "C:\Program Files\Microsoft Visual Studio\2022\Community" "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
 
       - name: Setup MSYS2 environment
         uses: msys2/setup-msys2@v2
