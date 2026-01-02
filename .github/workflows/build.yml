@@ -235,8 +235,9 @@ jobs:
 
       - name: Build
         run: |
-          docker exec --env-file "$GITHUB_ENV" arch-build env
-          docker exec --env-file "$GITHUB_ENV" arch-build sh -c 'SCCACHE_PATH=$(which sccache) ./tools/build.sh'
+          env | grep -v HOME > .env
+          cat .env
+          docker exec --env-file ".env" arch-build sh -c 'SCCACHE_PATH=$(which sccache) ./tools/build.sh'
 
       - name: Copy artifacts from container
         run: |
