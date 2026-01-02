@@ -207,6 +207,7 @@ jobs:
 
           echo "-- Dotnet"
           sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /usr/local/share/dotnet # ???
           echo "-- Android"
           sudo rm -rf /usr/local/lib/android
           echo "-- Haskell"
@@ -232,7 +233,7 @@ jobs:
         run: docker exec arch-build ./deps/linux.sh
 
       - name: Build
-        run: docker exec arch-build sh -c 'PLATFORM=${{ matrix.platform }} ARCH=${{ matrix.arch }} ./tools/build.sh'
+        run: docker exec arch-build sh -c 'PLATFORM=linux ARCH=${{ matrix.arch }} ./tools/build.sh'
 
       - name: Copy artifacts from container
         run: |

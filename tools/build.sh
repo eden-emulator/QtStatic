@@ -17,9 +17,9 @@ set -e
 configure() {
 	echo "-- Configuring $PRETTY_NAME..."
 
-	FLAGS="-fno-unwind-tables -fomit-frame-pointer"
+	FLAGS="-fno-unwind-tables -fomit-frame-pointer -O3 -g0"
 	if [ "$PLATFORM" = "windows" ]; then
-		FLAGS="/Oy /EHs- /EHc- /DYNAMICBASE:NO /Zd"
+		FLAGS="/Oy /EHs- /EHc- /DYNAMICBASE:NO"
 		set -- "$@" -DQT_BUILD_QDOC=OFF
 	else
 		LTO="-reduce-exports"
@@ -44,8 +44,6 @@ configure() {
 
 	# TEST PLEASE DO NOT MERGE THIS
 	LTO="-no-ltcg"
-
-	FLAGS="$FLAGS -O3 -g0"
 
 	set +e
 
