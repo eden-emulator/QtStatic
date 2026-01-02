@@ -61,9 +61,9 @@ extract() {
 	# qt6windows7 patch
 	echo "-- Patching for Windows 7..."
 	_repo="qt6windows7"
-	_sha="7ade46564f99453c04d893e070d02d47bcba63dc"
+	_sha="0d448dc647d6da45f03e1e77941204197b700376"
 
-	curl -L "https://github.com/ANightly/$_repo/archive/$_sha.tar.gz" -o w7.tar.gz
+	curl -L "https://github.com/crueter/$_repo/archive/$_sha.tar.gz" -o w7.tar.gz
 	$TAR xf w7.tar.gz
 
 	cp -r "$_repo-$_sha"/qtbase/src/* "$DIRECTORY"/qtbase/src
