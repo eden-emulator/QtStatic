@@ -12,6 +12,3 @@ pacman -Syu --needed --noconfirm \
 	glu \
 	libglvnd \
 	mesa
-
-df -h
-sudo du -h / | sort -hr | head -n 50

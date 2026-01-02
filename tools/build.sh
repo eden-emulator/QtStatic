@@ -39,7 +39,6 @@ configure() {
 	fi
 
 	if [ "$CCACHE" = true ]; then
-		command -v cygpath >/dev/null 2>&1 && SCCACHE_PATH=$(cygpath -u "${SCCACHE_PATH}")
 		set -- "$@" -DCMAKE_CXX_COMPILER_LAUNCHER="${SCCACHE_PATH}" -DCMAKE_C_COMPILER_LAUNCHER="${SCCACHE_PATH}"
 	fi
 
@@ -61,22 +60,16 @@ configure() {
 		-optimize-size -no-feature-icu -release -no-zstd -no-feature-qml-network -no-feature-libresolv \
 		-nomake tests -nomake examples \
 		-no-feature-sql -no-feature-xml -no-feature-dbus -no-feature-printdialog -no-feature-printer -no-feature-printsupport \
-		-no-feature-linguist -no-feature-designer -no-feature-assistant -no-feature-pixeltool -- "$@" \
+		-no-feature-linguist -no-feature-designer -no-feature-assistant -no-feature-pixeltool -no-feature-kqueue -- "$@" \
 		-DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" -DCMAKE_OSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET}"
-
-	if [ $? -ne 0 ]; then
-		[ "$CCACHE" = true ] && "${SCCACHE_PATH}" --show-stats
-		exit 1
-	fi
-
-	[ "$CCACHE" = true ] && "${SCCACHE_PATH}" --show-stats
 
 	set -e
 }
 
 build() {
     echo "-- Building $PRETTY_NAME..."
-    cmake --build . --parallel
+    cmake --build . --parallel || { "${SCCACHE_PATH}" --show-stats; exit 1; }
+	"${SCCACHE_PATH}" --show-stats
 }
 
 ## Packaging ##
