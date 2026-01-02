@@ -201,6 +201,9 @@ jobs:
       PLATFORM: linux
 
     steps:
+      - name: Install sudo
+        run: pacman -S sudo
+
       - name: Maximize build space
         uses: easimon/maximize-build-space@master
         with:
