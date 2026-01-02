@@ -19,7 +19,7 @@ jobs:
             arch: amd64
             msystem: mingw64
 
-          - runs-on: windows-latest
+          - runs-on: windows-11-arm
             arch: arm64
             msystem: clangarm64
         platform: [windows, mingw]
@@ -44,7 +44,7 @@ jobs:
         uses: ilammy/msvc-dev-cmd@v1
         if: matrix.platform == 'windows'
         with:
-          arch: amd64_${{ matrix.os.arch }}
+          arch: ${{ matrix.os.arch }}
 
       - uses: lukka/get-cmake@latest
         if: matrix.platform == 'windows'

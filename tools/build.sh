@@ -39,6 +39,10 @@ configure() {
 	# TEST PLEASE DO NOT MERGE THIS
 	LTO="-no-ltcg"
 
+	FLAGS="$FLAGS -O3 -g0"
+
+	set +e
+
 	# These are the recommended configuration options from Qt
 	# We also skip snca like quick3d, activeqt, etc.
 	# Also disable zstd, icu, and renderdoc; these are useless
@@ -47,12 +51,20 @@ configure() {
 	./configure -static -gc-binaries $LTO \
 		-submodules qtbase,qtdeclarative,qttools \
 		-skip qtlanguageserver,qtquicktimeline,qtactiveqt,qtquick3d,qtquick3dphysics \
-		-DCMAKE_CXX_FLAGS="$FLAGS -O3 -g0" -DCMAKE_C_FLAGS="$FLAGS -O3 -g0" \
 		-optimize-size -no-feature-icu -release -no-zstd -no-feature-qml-network -no-feature-libresolv \
-		-DCMAKE_OSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET}" \
 		-nomake tests -nomake examples \
-		-no-feature-sql -no-feature-xml -no-feature-dbus -no-feature-printdialog -no-feature-printer -no-feature-printsupport\
-		-no-feature-linguist -no-feature-designer -no-feature-assistant -no-feature-pixeltool "$*"
+		-no-feature-sql -no-feature-xml -no-feature-dbus -no-feature-printdialog -no-feature-printer -no-feature-printsupport \
+		-no-feature-linguist -no-feature-designer -no-feature-assistant -no-feature-pixeltool -- "$*" \
+		-DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" -DCMAKE_OSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET}"
+
+	if [ $? -ne 0 ]; then
+		[ "$CCACHE" = true ] && "${SCCACHE_PATH}" --show-stats
+		exit 1
+	fi
+
+	[ "$CCACHE" = true ] && "${SCCACHE_PATH}" --show-stats
+
+	set -e
 }
 
 build() {
