@@ -17,7 +17,7 @@ set -e
 configure() {
 	echo "-- Configuring $PRETTY_NAME..."
 
-	FLAGS="-fno-unwind-tables -fomit-frame-pointer -O3 -g0"
+	FLAGS="-fno-unwind-tables -fomit-frame-pointer -g0 -Wl,--gc-sections -Os"
 	if [ "$PLATFORM" = "windows" ]; then
 		FLAGS="/Oy /EHs- /EHc- /DYNAMICBASE:NO"
 		set -- "$@" -DQT_BUILD_QDOC=OFF
@@ -53,10 +53,10 @@ configure() {
 	# and cause more issues than they solve.
 	# shellcheck disable=SC2086
 	./configure -static -gc-binaries $LTO \
-		-submodules qtbase,qtdeclarative,qttools \
+		-submodules qtbase,qtdeclarative,qttools -optimize-size \
 		-skip qtlanguageserver,qtquicktimeline,qtactiveqt,qtquick3d,qtquick3dphysics \
-		-optimize-size -no-feature-icu -release -no-zstd -no-feature-qml-network -no-feature-libresolv \
 		-nomake tests -nomake examples \
+		-no-feature-icu -release -no-zstd -no-feature-qml-network -no-feature-libresolv -no-feature-dladdr \
 		-no-feature-sql -no-feature-xml -no-feature-dbus -no-feature-printdialog -no-feature-printer -no-feature-printsupport \
 		-no-feature-linguist -no-feature-designer -no-feature-assistant -no-feature-pixeltool -feature-filesystemwatcher -- "$@" \
 		-DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" -DCMAKE_OSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET}"
