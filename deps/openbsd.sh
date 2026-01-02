@@ -14,4 +14,5 @@ pkg_add gawk \
 	cmake \
 	ninja \
 	xz \
-	zstd
+	zstd \
+	gtar

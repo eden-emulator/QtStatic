@@ -12,4 +12,5 @@ pkg install -y \
 	unzip \
 	libGLU \
 	libglvnd \
-	mesa-libs
+	mesa-libs \
+	gtar

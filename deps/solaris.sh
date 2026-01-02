@@ -11,5 +11,6 @@ pkg install \
 	unzip \
 	xz \
 	libglvnd \
-	mesa \
 	glu
+
+	# mesa
