@@ -202,6 +202,9 @@ jobs:
     steps:
       - name: Maximize build space
         run: |
+          echo "-- Free Space before:"
+          df -h
+
           echo "-- Dotnet"
           sudo rm -rf /usr/share/dotnet
           echo "-- Android"
@@ -211,6 +214,7 @@ jobs:
           echo "-- CodeQL"
           sudo rm -rf /opt/hostedtoolcache/CodeQL
 
+          echo "-- Free Space after:"
           df -h
 
       - uses: actions/checkout@v4
@@ -228,7 +232,7 @@ jobs:
         run: docker exec arch-build ./deps/linux.sh
 
       - name: Build
-        run: docker exec arch-build PLATFORM=${{ matrix.platform }} ARCH=${{ matrix.arch }} ./tools/build.sh
+        run: docker exec arch-build sh -c 'PLATFORM=${{ matrix.platform }} ARCH=${{ matrix.arch }} ./tools/build.sh'
 
       - name: Copy artifacts from container
         run: |
