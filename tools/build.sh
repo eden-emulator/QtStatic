@@ -17,9 +17,10 @@ set -e
 configure() {
 	echo "-- Configuring $PRETTY_NAME..."
 
-	FLAGS="-fno-unwind-tables -fomit-frame-pointer -no-pie"
+	FLAGS="-fno-unwind-tables -fomit-frame-pointer -fno-pie"
 	if [ "$PLATFORM" = "windows" ]; then
 		FLAGS="/O2 /Oy /EHs- /EHc- /DYNAMICBASE:NO"
+		LTO="-no-ltcg"
 	else
 		LTO="-reduce-exports -ltcg"
 	fi
