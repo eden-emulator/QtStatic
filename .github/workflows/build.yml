@@ -49,6 +49,11 @@ jobs:
       - uses: lukka/get-cmake@latest
         if: matrix.platform == 'windows'
 
+      - name: Install zstd
+        if: matrix.platform == 'windows'
+        run: |
+          choco install zstandard
+
       - name: Setup MSYS2 environment
         uses: msys2/setup-msys2@v2
         if: matrix.platform == 'mingw'
@@ -113,18 +118,22 @@ jobs:
 
       - name: Build (Solaris)
         if: matrix.platform == 'solaris'
-        uses: vmactions/omnios-vm@v1
+        uses: vmactions/openindiana-vm@v0
         with:
           arch: ${{ matrix.vm-arch }}
-          release: "r151054"
+          release: "202510"
           usesh: true
           envs: 'PLATFORM ARCH GITHUB_WORKSPACE CCACHE SCCACHE_DIR SCCACHE_GHA_ENABLED ACTIONS_RESULTS_URL ACTIONS_RUNTIME_TOKEN ACTIONS_CACHE_SERVICE_V2'
 
           run: |
-            chmod a+x ./deps/omnios.sh
+            # wtf
+            ulimit -v unlimited
+            swap -s
+
+            chmod a+x ./deps/solaris.sh
             chmod a+x ./tools/build.sh
 
-            ./deps/omnios.sh
+            ./deps/solaris.sh
             ./tools/build.sh
 
       - name: Build (FreeBSD)

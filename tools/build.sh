@@ -23,7 +23,8 @@ configure() {
 	fi
 
 	if [ "$CCACHE" = true ]; then
-		set -- "$@" CMAKE_CXX_COMPILER_LAUNCHER="${SCCACHE_PATH}" CMAKE_C_COMPILER_LAUNCHER="${SCCACHE_PATH}"
+		command -v cygpath >/dev/null 2>&1 && SCCACHE_PATH=$(cygpath -u "${SCCACHE_PATH}")
+		set -- "$@" -DCMAKE_CXX_COMPILER_LAUNCHER="${SCCACHE_PATH}" -DCMAKE_C_COMPILER_LAUNCHER="${SCCACHE_PATH}"
 	fi
 
 	# These are the recommended configuration options from Qt

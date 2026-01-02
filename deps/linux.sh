@@ -8,4 +8,7 @@ pacman -Syu --needed --noconfirm \
     gcc \
     vulkan-headers \
 	ninja \
-	python3
+	python3 \
+	glu \
+	libglvnd \
+	mesa
