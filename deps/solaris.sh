@@ -7,7 +7,7 @@ pkg install \
 	gnu-coreutils \
 	cmake \
 	ninja \
-	zstd \
+	compress/zstd \
 	unzip \
 	xz \
 	libglvnd \

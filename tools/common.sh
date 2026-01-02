@@ -20,7 +20,7 @@ must_install() {
 	done
 }
 
-must_install curl zstd tar cmake
+must_install curl zstd tar cmake xz ninja unzip
 
 case "$ARTIFACT" in
 	*.zip) must_install unzip ;;
@@ -54,7 +54,7 @@ extract() {
 
 	case "$ARTIFACT" in
 		*.zip) unzip "$ROOTDIR/$ARTIFACT" >/dev/null ;;
-		*.tar.*) tar xf "$ROOTDIR/$ARTIFACT" >/dev/null ;;
+		*.tar.*) tar --use-compress-program xz -xf "$ROOTDIR/$ARTIFACT" >/dev/null ;;
 		*.7z) 7z x "$ROOTDIR/$ARTIFACT" >/dev/null ;;
 	esac
 
