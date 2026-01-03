@@ -25,7 +25,7 @@ show_stats() {
 configure() {
 	echo "-- Configuring $PRETTY_NAME..."
 
-	FLAGS="-fno-unwind-tables -g0"
+	FLAGS="-g0"
 	if [ "$PLATFORM" = "windows" ]; then
 		FLAGS="/Oy /EHs- /EHc- /DYNAMICBASE:NO"
 		set -- "$@" -DQT_BUILD_QDOC=OFF
@@ -41,14 +41,16 @@ configure() {
 	esac
 
 	if [ "$PLATFORM" != macos ] && [ "$PLATFORM" != windows ]; then
-		FLAGS="$FLAGS -Wl,--gc-sections"
+		LDFLAGS="-Wl,--gc-sections"
 	fi
 
 	if [ "$PLATFORM" = mingw ]; then
 		LTO="$LTO -no-ltcg"
 	else
 		LTO="$LTO -ltcg"
-		FLAGS="$FLAGS -fomit-frame-pointer"
+		if [ "$PLATFORM" != windows ]; then
+			FLAGS="$FLAGS -fomit-frame-pointer -fno-unwind-tables"
+		fi
 	fi
 
 	if [ "$CCACHE" = true ]; then
@@ -64,13 +66,14 @@ configure() {
 	# and cause more issues than they solve.
 	# shellcheck disable=SC2086
 	./configure -static -gc-binaries $LTO \
-		-submodules qtbase,qtdeclarative,qttools -optimize-size \
+		-submodules qtbase,qtdeclarative,qttools,qtmultimedia -optimize-size -no-pch \
 		-skip qtlanguageserver,qtquicktimeline,qtactiveqt,qtquick3d,qtquick3dphysics \
 		-nomake tests -nomake examples \
 		-no-feature-icu -release -no-zstd -no-feature-qml-network -no-feature-libresolv -no-feature-dladdr \
 		-no-feature-sql -no-feature-xml -no-feature-dbus -no-feature-printdialog -no-feature-printer -no-feature-printsupport \
 		-no-feature-linguist -no-feature-designer -no-feature-assistant -no-feature-pixeltool -feature-filesystemwatcher -- "$@" \
-		-DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" -DCMAKE_OSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET}"
+		-DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" -DCMAKE_OSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET}" \
+		-DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS"
 }
 
 build() {

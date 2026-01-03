@@ -5,11 +5,20 @@
 # shellcheck disable=SC1091
 . ./tools/vars.sh
 
-# TODO: autodetect platform
+# default platform
+case "$(uname -s)" in
+	Linux) : "${PLATFORM:=linux}" ;;
+	Darwin) : "${PLATFORM:=macos}" ;;
+	FreeBSD) : "${PLATFORM:=freebsd}" ;;
+	OpenBSD) : "${PLATFORM:=openbsd}" ;;
+	SunOS) : "${PLATFORM:=solaris}" ;;
+	*) : "${PLATFORM:?-- You must supply the PLATFORM environment variable.}" ;;
+esac
+
+# TODO: autodetect architecture
 # but make android manual specification
 ROOTDIR="$PWD"
 : "${OUT_DIR:=$PWD/out}"
-: "${PLATFORM:?-- You must supply the PLATFORM environment variable.}"
 : "${MACOSX_DEPLOYMENT_TARGET:=11.0}"
 
 ## Command Checks ##
@@ -59,15 +68,27 @@ extract() {
 	esac
 
 	# qt6windows7 patch
-	echo "-- Patching for Windows 7..."
-	_repo="qt6windows7"
-	_sha="fa43cf68894c80325025da0f8cf891358ab70371"
+	if [ "$PLATFORM" = "windows" ] && [ "$VERSION" = "$QT6WINDOWS7_VERSION" ]; then
+		echo "-- Patching for Windows 7..."
 
-	curl -L "https://github.com/crueter/$_repo/archive/$_sha.tar.gz" -o w7.tar.gz
-	$TAR xf w7.tar.gz
+		curl -L "$QT6WINDOWS7_URL" -o w7.tar.gz
+		$TAR xf w7.tar.gz
 
-	cp -r "$_repo-$_sha"/qtbase/src/* "$DIRECTORY"/qtbase/src
-	rm w7.tar.gz
+		cp -r "$QT6WINDOWS7_DIR"/qtbase/src/* "$DIRECTORY"/qtbase/src
+		rm w7.tar.gz
+	fi
+
+	# openbsd patches
+	if [ "$PLATFORM" = "openbsd" ]; then
+		curl "$OPENBSD_PATCHES_URL" -o "$ROOTDIR/artifacts/openbsd-patches.tar.zst"
+		./mk/openbsd.sh apply
+	fi
+
+	# solaris patches
+	if [ "$PLATFORM" = "solaris" ]; then
+		curl "$SOLARIS_PATCHES_URL" -o "$ROOTDIR/artifacts/solaris-patches.tar.zst"
+		./mk/solaris.sh apply
+	fi
 }
 
 # generate sha1, 256, and 512 sums for a file
