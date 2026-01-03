@@ -70,7 +70,7 @@ extract() {
 	esac
 
 	# qt6windows7 patch
-	if [ "$VERSION" = "$QT6WINDOWS7_VERSION" ] && [ "$PLATFORM" != openbsd ]; then
+	if [ "$VERSION" = "$QT6WINDOWS7_VERSION" ] && [ "$PLATFORM" != openbsd ] && [ "$ARCH" = amd64 ]; then
 		echo "-- Patching for Windows 7..."
 
 		curl -L "$QT6WINDOWS7_URL" -o w7.tar.gz

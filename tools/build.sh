@@ -98,7 +98,7 @@ cd "$BUILD_DIR"
 extract
 
 ## Configure ##
-cd "$BUILD_DIR/$DIRECTORY"
+cd "$ROOTDIR/$BUILD_DIR/$DIRECTORY"
 configure
 
 ## Build ##
