@@ -68,7 +68,7 @@ extract() {
 	esac
 
 	# qt6windows7 patch
-	if [ "$PLATFORM" = "windows" ] && [ "$VERSION" = "$QT6WINDOWS7_VERSION" ]; then
+	if [ "$VERSION" = "$QT6WINDOWS7_VERSION" ]; then
 		echo "-- Patching for Windows 7..."
 
 		curl -L "$QT6WINDOWS7_URL" -o w7.tar.gz
@@ -80,13 +80,13 @@ extract() {
 
 	# openbsd patches
 	if [ "$PLATFORM" = "openbsd" ]; then
-		curl "$OPENBSD_PATCHES_URL" -o "$ROOTDIR/artifacts/openbsd-patches.tar.zst"
+		curl -L "$OPENBSD_PATCHES_URL" -o "$ROOTDIR/artifacts/openbsd-patches.tar.zst"
 		./mk/openbsd.sh apply
 	fi
 
 	# solaris patches
 	if [ "$PLATFORM" = "solaris" ]; then
-		curl "$SOLARIS_PATCHES_URL" -o "$ROOTDIR/artifacts/solaris-patches.tar.zst"
+		curl -L "$SOLARIS_PATCHES_URL" -o "$ROOTDIR/artifacts/solaris-patches.tar.zst"
 		./mk/solaris.sh apply
 	fi
 }
