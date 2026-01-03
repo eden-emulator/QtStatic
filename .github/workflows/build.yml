@@ -223,13 +223,14 @@ jobs:
 
       - name: Start container
         run: |
-          docker run -d --name arch-build \
+          docker run \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace ghcr.io/pkgforge-dev/archlinux:latest \
             -e ACTIONS_CACHE_URL \
             -e ACTIONS_RUNTIME_TOKEN \
             -e ACTIONS_RESULTS_URL \
             -e GITHUB_ACTIONS=true \
+            -d --name arch-build \
             tail -f /dev/null
 
       - name: Install sccache
