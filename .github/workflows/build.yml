@@ -225,11 +225,7 @@ jobs:
         run: |
           docker run -d --name arch-build \
             -v ${{ github.workspace }}:/workspace \
-            -w /workspace \
-            -e ACTIONS_CACHE_URL \
-            -e ACTIONS_RUNTIME_TOKEN \
-            -e ACTIONS_RESULTS_URL \
-            -e GITHUB_ACTIONS=true \
+            -w /workspace
             ghcr.io/pkgforge-dev/archlinux:latest \
             tail -f /dev/null
 
@@ -240,6 +236,9 @@ jobs:
 
       - name: Deps
         run: docker exec arch-build ./deps/linux.sh
+
+      - name: Expose GitHub Runtime
+        uses: crazy-max/ghaction-github-runtime@v3
 
       - name: Build
         run: |
