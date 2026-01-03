@@ -85,14 +85,14 @@ extract() {
 	# openbsd patches
 	if [ "$PLATFORM" = "openbsd" ]; then
 		cd "$ROOTDIR"
-		curl -L "$OPENBSD_PATCHES_URL" -o "$ROOTDIR/artifacts/openbsd-patches.tar.zst"
+		curl -L "$OPENBSD_PATCHES_URL" -o "$ROOTDIR/artifacts/openbsd-patches-$VERSION.tar.zst"
 		mk/openbsd.sh apply
 	fi
 
 	# solaris patches
 	if [ "$PLATFORM" = "solaris" ]; then
 		cd "$ROOTDIR"
-		curl -L "$SOLARIS_PATCHES_URL" -o "$ROOTDIR/artifacts/solaris-patches.tar.zst"
+		curl -L "$SOLARIS_PATCHES_URL" -o "$ROOTDIR/artifacts/solaris-patches-$VERSION.tar.zst"
 		mk/solaris.sh apply
 	fi
 }

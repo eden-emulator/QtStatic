@@ -223,7 +223,14 @@ jobs:
 
       - name: Start container
         run: |
-          docker run -d --name arch-build -v ${{ github.workspace }}:/workspace -w /workspace ghcr.io/pkgforge-dev/archlinux:latest tail -f /dev/null
+          docker run -d --name arch-build \
+            -v ${{ github.workspace }}:/workspace \
+            -w /workspace ghcr.io/pkgforge-dev/archlinux:latest \
+            -e ACTIONS_CACHE_URL \
+            -e ACTIONS_RUNTIME_TOKEN \
+            -e ACTIONS_RESULTS_URL \
+            -e GITHUB_ACTIONS=true \
+            tail -f /dev/null
 
       - name: Install sccache
         uses: Eden-CI/sccache-action@v0.0.1
