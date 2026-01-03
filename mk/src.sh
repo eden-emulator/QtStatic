@@ -28,7 +28,17 @@ cd "$DIRECTORY"
 rm -rf qtweb* qtscxml qtpositioning qtconnectivity pyside6 qtquicktimeline qtremoteobjects \
 	qtvirtualkeyboard tests qtspeech qtserial* qtsensors qtquick3d* qt3d qtcoap qtcharts \
 	qtactiveqt qtdatavis3d qtdoc qtgraphs qtgrpc qthttpserver qtlanguageserver qtlocation \
-	qtlottie qtmqtt qtnetworkauth
+	qtlottie qtmqtt qtnetworkauth qtquickeffectmaker
+
+# remove references to docs
+_basehelpers=qtbase/cmake/QtBaseHelpers.cmake
+sed 's/add_subdirectory(doc)//g' "$_basehelpers" > "$_basehelpers.tmp"
+mv "$_basehelpers.tmp" "$_basehelpers"
+
+# quick controls docs
+_qclist=qtdeclarative/src/quickcontrols/CMakeLists.txt
+sed 's/doc\/qtquickcontrols.qdocconf//g' "$_qclist" > "$_qclist.tmp"
+mv "$_qclist.tmp" "$_qclist"
 
 # we have to || true because sometimes parent directories are removed
 find . -type d \( -name examples -o -name tests -o -name demos -o -name docs -o -name doc \) -exec rm -rf {} \; || true
