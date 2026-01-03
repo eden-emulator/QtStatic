@@ -248,7 +248,7 @@ jobs:
           env | grep -v HOME > .env
           cat .env
 
-          docker exec --env-file '.env' arch-build bash -c 'sccache --start-server; sccache --show-stats'
+          docker exec --env-file '.env' arch-build bash -c 'SCCACHE_LOG=debug SCCACHE_NO_DAEMON=1 sccache --start-server'
 
           docker exec --env-file ".env" arch-build sh -c 'SCCACHE_PATH=$(which sccache) ./tools/build.sh'
 
