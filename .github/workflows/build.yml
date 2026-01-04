@@ -217,11 +217,7 @@ jobs:
 
       - name: Start container
         run: |
-          # THEORETICALLY this should make files created in the mounted
-          # workspace be owned by the runner user
-          # however docker SUCKS so it does NOT always work
           docker run -d --name arch-build \
-            --user "$(id -u):$(id -g)" \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
             ghcr.io/pkgforge-dev/archlinux:latest \
@@ -238,7 +234,7 @@ jobs:
           env | grep -v HOME > .env
           cat .env
 
-          docker exec --env-file ".env" arch-build sh -c './tools/build.sh'
+          docker exec --env-file ".env" --user "$(id -u):$(id -g)" arch-build sh -c './tools/build.sh'
 
       - name: Copy artifacts from container
         run: |

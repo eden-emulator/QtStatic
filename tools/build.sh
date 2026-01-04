@@ -14,6 +14,9 @@ set -e
 ## Build Functions ##
 
 [ -z "$CCACHE_PATH" ] && CCACHE_PATH=$(which ccache || which sccache || echo "ccache")
+if command -v cygpath >/dev/null 2>&1; then
+	CCACHE_PATH=$(cygpath -w "$CCACHE_PATH")
+fi
 echo "Using ccache at: $CCACHE_PATH"
 
 show_stats() {
@@ -42,6 +45,11 @@ configure() {
 		freebsd|macos|mingw) FLAGS="$FLAGS -fno-pie" ;;
 		*) ;;
 	esac
+
+	# average openbsd moment
+	if [ "$PLATFORM" = openbsd ]; then
+		set -- "$@" -DCMAKE_AR="$(which llvm-ar)" -DCMAKE_RANLIB="$(which llvm-ranlib)"
+	fi
 
 	if [ "$PLATFORM" != macos ] && [ "$PLATFORM" != windows ]; then
 		LDFLAGS="-Wl,--gc-sections"

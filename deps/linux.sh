@@ -1,6 +1,12 @@
 #!/bin/sh -ex
 
-pacman -Syu --needed --noconfirm \
+if command -v sudo >/dev/null 2>&1; then
+    SUDO=sudo
+else
+    SUDO=""
+fi
+
+$SUDO pacman -Syu --needed --noconfirm \
     cmake \
     base-devel \
     git \
