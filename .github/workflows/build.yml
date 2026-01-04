@@ -4,7 +4,6 @@ on:
   workflow_call:
 
 env:
-  SCCACHE_GHA_ENABLED: "true"
   CCACHE: "true"
 
 jobs:
@@ -37,10 +36,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install sccache
-        uses: Eden-CI/sccache-action@v0.0.1
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1
         with:
-          disable_annotations: true
+          variant: sccache
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -74,7 +73,7 @@ jobs:
           pacboy: >-
             toolchain:p vulkan-devel:p pkg-config:p
             nasm:p ffnvcodec-headers:p amf-headers:p
-            cmake:p ninja:p
+            cmake:p ninja:p ccache:p
 
       - name: Build (MSYS)
         if: matrix.platform == 'mingw'
@@ -83,6 +82,8 @@ jobs:
       - name: Build (MSVC)
         if: matrix.platform == 'windows'
         run: |
+          # force static runtime FUCK YOU MICROSOFT
+          export CL=" /MT"
           PLATFORM=${{ matrix.platform }} ./tools/build.sh
 
       - name: Upload Artifacts
@@ -120,10 +121,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install sccache
-        uses: Eden-CI/sccache-action@v0.0.1
-        with:
-          disable_annotations: true
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1
 
       - name: Build (Solaris)
         if: matrix.platform == 'solaris'
@@ -132,7 +131,7 @@ jobs:
           arch: ${{ matrix.vm-arch }}
           release: "202510"
           usesh: true
-          envs: 'PLATFORM ARCH GITHUB_WORKSPACE CCACHE SCCACHE_DIR SCCACHE_GHA_ENABLED ACTIONS_RESULTS_URL ACTIONS_RUNTIME_TOKEN ACTIONS_CACHE_SERVICE_V2'
+          envs: 'PLATFORM ARCH GITHUB_WORKSPACE CCACHE'
 
           run: |
             # wtf
@@ -143,9 +142,6 @@ jobs:
             chmod a+x ./tools/build.sh
 
             ./deps/solaris.sh
-
-            export SCCACHE_PATH=$(which sccache)
-
             ./tools/build.sh
 
       - name: Build (FreeBSD)
@@ -154,14 +150,13 @@ jobs:
         with:
           arch: ${{ matrix.vm-arch }}
           usesh: true
-          envs: 'PLATFORM ARCH GITHUB_WORKSPACE CCACHE SCCACHE_DIR SCCACHE_GHA_ENABLED ACTIONS_RESULTS_URL ACTIONS_RUNTIME_TOKEN ACTIONS_CACHE_SERVICE_V2'
+          envs: 'PLATFORM ARCH GITHUB_WORKSPACE CCACHE'
 
           run: |
             chmod a+x ./deps/freebsd.sh
             chmod a+x ./tools/build.sh
 
             ./deps/freebsd.sh
-            export SCCACHE_PATH=$(which sccache)
 
             bash -e ./tools/build.sh
 
@@ -171,14 +166,13 @@ jobs:
         with:
           arch: ${{ matrix.vm-arch }}
           usesh: true
-          envs: 'PLATFORM ARCH GITHUB_WORKSPACE CCACHE SCCACHE_DIR SCCACHE_GHA_ENABLED ACTIONS_RESULTS_URL ACTIONS_RUNTIME_TOKEN ACTIONS_CACHE_SERVICE_V2'
+          envs: 'PLATFORM ARCH GITHUB_WORKSPACE CCACHE'
 
           run: |
             chmod a+x ./deps/openbsd.sh
             chmod a+x ./tools/build.sh
 
             ./deps/openbsd.sh
-            export SCCACHE_PATH=$(which sccache)
 
             # OpenBSD compiler situation is sad
             bash -e ./tools/build.sh
@@ -223,38 +217,34 @@ jobs:
 
       - name: Start container
         run: |
+          # THEORETICALLY this should make files created in the mounted
+          # workspace be owned by the runner user
+          # however docker SUCKS so it does NOT always work
           docker run -d --name arch-build \
+            --user "$(id -u):$(id -g)" \
             -v ${{ github.workspace }}:/workspace \
             -w /workspace \
             ghcr.io/pkgforge-dev/archlinux:latest \
             tail -f /dev/null
 
-      - name: Install sccache
-        uses: Eden-CI/sccache-action@v0.0.1
-        with:
-          disable_annotations: true
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1
 
       - name: Deps
         run: docker exec arch-build ./deps/linux.sh
 
-      - name: Expose GitHub Runtime
-        uses: crazy-max/ghaction-github-runtime@v3
-
       - name: Build
         run: |
-          export SCCACHE_GHA_ENABLED=true
-          export SCCACHE_DIR=$GITHUB_WORKSPACE/.sccache
-
           env | grep -v HOME > .env
           cat .env
 
-          docker exec --env-file '.env' arch-build bash -c 'SCCACHE_LOG=debug SCCACHE_NO_DAEMON=1 sccache --start-server'
-
-          docker exec --env-file ".env" arch-build sh -c 'SCCACHE_PATH=$(which sccache) ./tools/build.sh'
+          docker exec --env-file ".env" arch-build sh -c './tools/build.sh'
 
       - name: Copy artifacts from container
         run: |
           docker cp arch-build:/workspace/artifacts .
+          # some files will still be owned by root because docker SUCKS
+          sudo chown -R $(id -u):$(id -g) artifacts || true
           docker stop arch-build
 
       - name: Upload Artifacts
@@ -278,10 +268,8 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Install sccache
-        uses: Eden-CI/sccache-action@v0.0.1
-        with:
-          disable_annotations: true
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1
 
       - name: Get Dependencies
         run: |

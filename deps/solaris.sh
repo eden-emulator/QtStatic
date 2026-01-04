@@ -12,4 +12,4 @@ pkg install \
 	xz \
 	mesa \
 	gnu-binutils \
-	sccache
+	ccache

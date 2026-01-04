@@ -14,4 +14,4 @@ pkg install -y \
 	libglvnd \
 	mesa-libs \
 	gtar \
-	sccache
+	ccache

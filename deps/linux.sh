@@ -12,4 +12,4 @@ pacman -Syu --needed --noconfirm \
 	glu \
 	libglvnd \
 	mesa \
-	sccache
+	ccache
