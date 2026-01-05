@@ -43,7 +43,7 @@ jobs:
             android-*/*.tar.zst*
             macos-*/*.tar.zst*
             linux-*/*.tar.zst*
-            # freebsd-*/*.tar.zst*
+            freebsd-*/*.tar.zst*
             # openbsd-*/*.tar.zst*
             # solaris-*/*.tar.zst*
 
