@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build
+    uses: ./.github/workflows/build.yml
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download
+        uses: actions/download-artifact@v4
+
+      - name: Get Version
+        run: |
+          . ./tools/vars.sh
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Generate Changelog
+        run: |
+          ./tools/changelog.sh > changelog.md
+
+      - name: Release
+        uses: softprops/action-gh-release@v2.3.2
+        with:
+          body_path: ./changelog.md
+          name: Qt ${{ env.VERSION }}
+          tag_name: v${{ env.VERSION }}
+          files: |
+            windows-*/*.tar.zst*
+            mingw-*/*.tar.zst*
+            android-*/*.tar.zst*
+            macos-*/*.tar.zst*
+            linux-*/*.tar.zst*
+            # freebsd-*/*.tar.zst*
+            # openbsd-*/*.tar.zst*
+            # solaris-*/*.tar.zst*
+
+          make_latest: true

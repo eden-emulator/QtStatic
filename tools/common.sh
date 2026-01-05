@@ -5,12 +5,23 @@
 # shellcheck disable=SC1091
 . ./tools/vars.sh
 
-# TODO: autodetect platform
+# default platform
+case "$(uname -s)" in
+	Linux) : "${PLATFORM:=linux}" ;;
+	Darwin) : "${PLATFORM:=macos}" ;;
+	FreeBSD) : "${PLATFORM:=freebsd}" ;;
+	OpenBSD) : "${PLATFORM:=openbsd}" ;;
+	SunOS) : "${PLATFORM:=solaris}" ;;
+	*) : "${PLATFORM:?-- You must supply the PLATFORM environment variable.}" ;;
+esac
+
+# TODO: autodetect architecture
 # but make android manual specification
 ROOTDIR="$PWD"
 : "${OUT_DIR:=$PWD/out}"
-: "${PLATFORM:?-- You must supply the PLATFORM environment variable.}"
 : "${MACOSX_DEPLOYMENT_TARGET:=11.0}"
+
+mkdir -p "$ROOTDIR"/artifacts
 
 ## Command Checks ##
 
@@ -20,7 +31,11 @@ must_install() {
 	done
 }
 
-must_install curl zstd tar cmake
+must_install curl zstd cmake xz ninja unzip ar
+
+if [ "$PLATFORM" = "openbsd" ]; then
+	must_install llvm-ar-19 llvm-ranlib-19
+fi
 
 case "$ARTIFACT" in
 	*.zip) must_install unzip ;;
@@ -54,20 +69,36 @@ extract() {
 
 	case "$ARTIFACT" in
 		*.zip) unzip "$ROOTDIR/$ARTIFACT" >/dev/null ;;
-		*.tar.*) tar xf "$ROOTDIR/$ARTIFACT" >/dev/null ;;
+		*.tar.*) $TAR xf "$ROOTDIR/$ARTIFACT" >/dev/null ;;
 		*.7z) 7z x "$ROOTDIR/$ARTIFACT" >/dev/null ;;
 	esac
 
 	# qt6windows7 patch
-	echo "-- Patching for Windows 7..."
-	_repo="qt6windows7"
-	_sha="7ade46564f99453c04d893e070d02d47bcba63dc"
+	if [ "$VERSION" = "$QT6WINDOWS7_VERSION" ] && \
+		[ "$PLATFORM" != openbsd ] && \
+		{ [ "$ARCH" = amd64 ] || [ "$PLATFORM" = macos ] || [ "$PLATFORM" = linux ]; }; then
+		echo "-- Patching for Windows 7..."
 
-	curl -L "https://github.com/ANightly/$_repo/archive/$_sha.tar.gz" -o w7.tar.gz
-	tar xf w7.tar.gz
+		curl -L "$QT6WINDOWS7_URL" -o w7.tar.gz
+		$TAR xf w7.tar.gz
 
-	cp -r "$_repo-$_sha"/qtbase/src/* "$DIRECTORY"/qtbase/src
-	rm w7.tar.gz
+		cp -r "$QT6WINDOWS7_DIR"/qtbase/src/* "$DIRECTORY"/qtbase/src
+		rm w7.tar.gz
+	fi
+
+	# openbsd patches
+	if [ "$PLATFORM" = "openbsd" ]; then
+		cd "$ROOTDIR"
+		curl -L "$OPENBSD_PATCHES_URL" -o "$ROOTDIR/artifacts/openbsd-patches-$VERSION.tar.zst"
+		mk/openbsd.sh apply
+	fi
+
+	# solaris patches
+	if [ "$PLATFORM" = "solaris" ]; then
+		cd "$ROOTDIR"
+		curl -L "$SOLARIS_PATCHES_URL" -o "$ROOTDIR/artifacts/solaris-patches-$VERSION.tar.zst"
+		mk/solaris.sh apply
+	fi
 }
 
 # generate sha1, 256, and 512 sums for a file
@@ -105,7 +136,7 @@ package() {
 	TARBALL=$FILENAME-$PLATFORM-$ARCH-$VERSION.tar
 
     cd "$OUT_DIR"
-    tar cf "$ROOTDIR/artifacts/$TARBALL" ./*
+    $TAR cf "$ROOTDIR/artifacts/$TARBALL" ./*
 
     cd "$ROOTDIR/artifacts"
     zstd -10 "$TARBALL"
@@ -113,3 +144,20 @@ package() {
 
     sums "$TARBALL.zst"
 }
+
+## Platform Stuff ##
+TAR="tar"
+SHARED=false
+
+case "$PLATFORM" in
+	freebsd|openbsd|solaris)
+		TAR="gtar"
+		SHARED=true
+		;;
+	linux)
+		SHARED=true
+		;;
+esac
+
+export TAR
+export SHARED

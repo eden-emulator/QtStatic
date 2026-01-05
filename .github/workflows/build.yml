@@ -1,0 +1,178 @@
+name: CI
+
+on:
+  workflow_call:
+
+env:
+  CCACHE: "true"
+
+jobs:
+  windows:
+    name: "${{ matrix.platform }} (${{ matrix.os.arch }})"
+    runs-on: ${{ matrix.os.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - runs-on: windows-latest
+            arch: amd64
+            msvc_arch: amd64
+            msystem: mingw64
+
+          - runs-on: windows-11-arm
+            arch: arm64
+            msvc_arch: arm64
+            msystem: clangarm64
+        platform: [windows, mingw]
+
+    env:
+      ARCH: ${{ matrix.os.arch }}
+      PLATFORM: ${{ matrix.platform }}
+
+    defaults:
+      run:
+        shell: ${{ matrix.platform == 'mingw' && 'msys2 {0}' || 'bash' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup ccache
+        uses: crueter/ccache-action@master
+        with:
+          key: ${{ env.PLATFORM }}-${{ env.ARCH }}
+          restore-keys: ${{ env.PLATFORM }}
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        if: matrix.platform == 'windows'
+        with:
+          arch: ${{ matrix.os.msvc_arch }}
+
+      - uses: lukka/get-cmake@latest
+        if: matrix.platform == 'windows'
+
+      - name: Fix MSVC being stupid
+        if: matrix.platform == 'windows'
+        shell: cmd
+        run: |
+          # WHAT THE FUCK
+          mklink /D "C:\Program Files\Microsoft Visual Studio\2022\Community" "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
+
+      - name: Install zstd
+        if: matrix.platform == 'windows'
+        run: |
+          choco install zstandard
+
+      - name: Setup MSYS2 environment
+        uses: msys2/setup-msys2@v2
+        if: matrix.platform == 'mingw'
+        with:
+          msystem: ${{ matrix.os.msystem }}
+          update: true
+          install: >-
+            git make unzip pkgconf diffutils
+          pacboy: >-
+            toolchain:p vulkan-devel:p pkg-config:p
+            nasm:p ffnvcodec-headers:p amf-headers:p
+            cmake:p ninja:p ccache:p
+
+      - name: Build (MSYS)
+        if: matrix.platform == 'mingw'
+        run: ./tools/build.sh
+
+      - name: Build (MSVC)
+        if: matrix.platform == 'windows'
+        run: |
+          PLATFORM=${{ matrix.platform }} ./tools/build.sh
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}-${{ matrix.os.arch }}
+          path: artifacts/*
+          
+  linux:
+    name: "Linux (${{ matrix.arch }})"
+    runs-on: ${{ matrix.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runs-on: ubuntu-latest
+            arch: amd64
+
+          - runs-on: ubuntu-24.04-arm
+            arch: aarch64
+
+    env:
+      ARCH: ${{ matrix.arch }}
+      PLATFORM: linux
+
+    steps:
+      - name: Maximize build space
+        uses: AdityaGarg8/remove-unwanted-software@v5
+        with:
+          remove-android: 'true'
+          remove-dotnet: 'true'
+          remove-haskell: 'true'
+          remove-codeql: 'true'
+          remove-cached-tools: 'true'
+          remove-large-packages: 'true'
+          verbose: 'true'
+
+      - uses: actions/checkout@v4
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ env.PLATFORM }}-${{ env.ARCH }}
+          restore-keys: ${{ env.PLATFORM }}-
+
+      - name: Deps
+        run: ./deps/linux.sh
+
+      - name: Build
+        run: ./tools/build.sh
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-${{ matrix.arch }}
+          path: artifacts/*
+
+  macos:
+    name: "macOS (universal)"
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+
+    env:
+      PLATFORM: macos
+      ARCH: universal
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ env.PLATFORM }}-${{ env.ARCH }}
+          restore-keys: ${{ env.PLATFORM }}-
+
+      - name: Get Dependencies
+        run: |
+          chmod a+x ./deps/macos.sh
+          ./deps/macos.sh
+
+      - name: Build
+        run: |
+          chmod a+x ./tools/build.sh
+          ./tools/build.sh
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-universal
+          path: artifacts/*
