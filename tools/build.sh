@@ -48,7 +48,7 @@ configure() {
 
 	# average openbsd moment
 	if [ "$PLATFORM" = openbsd ]; then
-		set -- "$@" -DCMAKE_AR="$(which llvm-ar)" -DCMAKE_RANLIB="$(which llvm-ranlib)"
+		set -- "$@" -DCMAKE_AR="$(which llvm-ar-19)" -DCMAKE_RANLIB="$(which llvm-ranlib-19)"
 	fi
 
 	if [ "$PLATFORM" != macos ] && [ "$PLATFORM" != windows ]; then

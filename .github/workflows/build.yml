@@ -40,6 +40,8 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1
         with:
           variant: sccache
+          key: ${{ env.PLATFORM }}-${{ env.ARCH }}
+          restore-keys: ${{ env.PLATFORM }}-
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -83,7 +85,7 @@ jobs:
         if: matrix.platform == 'windows'
         run: |
           # force static runtime FUCK YOU MICROSOFT
-          export CL=" /MT"
+          [ "$ARCH" = amd64 ] || export CL=" /MT"
           PLATFORM=${{ matrix.platform }} ./tools/build.sh
 
       - name: Upload Artifacts
@@ -123,6 +125,9 @@ jobs:
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ env.PLATFORM }}-${{ env.ARCH }}
+          restore-keys: ${{ env.PLATFORM }}-
 
       - name: Build (Solaris)
         if: matrix.platform == 'solaris'
@@ -216,6 +221,9 @@ jobs:
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ env.PLATFORM }}-${{ env.ARCH }}
+          restore-keys: ${{ env.PLATFORM }}-
 
       - name: Deps
         run: ./deps/linux.sh
@@ -246,6 +254,9 @@ jobs:
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1
+        with:
+          key: ${{ env.PLATFORM }}-${{ env.ARCH }}
+          restore-keys: ${{ env.PLATFORM }}-
 
       - name: Get Dependencies
         run: |

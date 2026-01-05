@@ -34,7 +34,7 @@ must_install() {
 must_install curl zstd cmake xz ninja unzip ar
 
 if [ "$PLATFORM" = "openbsd" ]; then
-	must_install llvm-ar llvm-ranlib
+	must_install llvm-ar-19 llvm-ranlib-19
 fi
 
 case "$ARTIFACT" in
@@ -76,7 +76,7 @@ extract() {
 	# qt6windows7 patch
 	if [ "$VERSION" = "$QT6WINDOWS7_VERSION" ] && \
 		[ "$PLATFORM" != openbsd ] && \
-		{ [ "$ARCH" = amd64 ] || [ "$PLATFORM" = macos ]; }; then
+		{ [ "$ARCH" = amd64 ] || [ "$PLATFORM" = macos ] || [ "$PLATFORM" = linux ]; }; then
 		echo "-- Patching for Windows 7..."
 
 		curl -L "$QT6WINDOWS7_URL" -o w7.tar.gz
