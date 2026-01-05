@@ -38,7 +38,15 @@ configure() {
 
 	FLAGS="-g0"
 	if [ "$PLATFORM" = "windows" ]; then
-		FLAGS="/Oy /EHs- /EHc- /DYNAMICBASE:NO"
+		# /Gy - function-sectors
+		# /Gw - data-sections
+		# /OPT:REF - gc-sections
+		# /OPT:ICF - identical code folding
+		# /EHs- /EHc- - EXCEPTIONS ARE FOR LOSERS
+		FLAGS="/Gy /Gw /OPT:REF /OPT:ICF /EHs- /EHc-"
+
+		# /DYNAMICBASE:NO - disable ASLR on amd64 bcz why not
+		[ "$ARCH" != amd64 ] || FLAGS="$FLAGS /DYNAMICBASE:NO"
 		set -- "$@" -DQT_BUILD_QDOC=OFF
 	else
 		LTO="-reduce-exports"
@@ -56,17 +64,18 @@ configure() {
 		set -- "$@" -DCMAKE_AR="$(which llvm-ar-19)" -DCMAKE_RANLIB="$(which llvm-ranlib-19)"
 	fi
 
+	# saves some linker time, but of course macOS doesn't support it :/
 	if [ "$PLATFORM" != macos ] && [ "$PLATFORM" != windows ]; then
 		LDFLAGS="-Wl,--gc-sections"
 	fi
 
-	if [ "$PLATFORM" = mingw ]; then
+	# mingw and windows get absolutely clobbered if you try to LTO
+	if [ "$PLATFORM" = mingw ] || [ "$PLATFORM" = windows ]; then
 		LTO="$LTO -no-ltcg"
 	else
 		LTO="$LTO -ltcg"
-		if [ "$PLATFORM" != windows ]; then
-			FLAGS="$FLAGS -fomit-frame-pointer -fno-unwind-tables"
-		fi
+		# saves a good chunk of space otherwise
+		FLAGS="$FLAGS -fomit-frame-pointer -fno-unwind-tables"
 	fi
 
 	if [ "$CCACHE" = true ]; then
@@ -75,16 +84,19 @@ configure() {
 
 	# I have no idea what's going on with MSVC, you almost have to wonder if it has something to do
 	# with them firing every single one of their developers in 2023
-	if [ "$PLATFORM" = "windows" ]; then
-		set -- "$@" -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL
+	if [ "$PLATFORM" = "windows" ] && [ "$ARCH" = arm64 ]; then
+		LTO="$LTO -static-runtime"
 	fi
+
+	# UNIX builds shared because you do not want to bundle every Qt plugin under the sun
+	set -- "$@" -DBUILD_SHARED_LIBS="$SHARED"
 
 	# These are the recommended configuration options from Qt
 	# We skip snca like quick3d, activeqt, etc.
 	# Also disable zstd, icu, and renderdoc; these are useless
 	# and cause more issues than they solve.
 	# shellcheck disable=SC2086
-	./configure -static -gc-binaries $LTO \
+	./configure -gc-binaries $LTO \
 		-submodules qtbase,qtdeclarative,qttools,qtmultimedia -optimize-size -no-pch \
 		-skip qtlanguageserver,qtquicktimeline,qtactiveqt,qtquick3d,qtquick3dphysics,qtdoc,qt5compat \
 		-nomake tests -nomake examples \
@@ -114,7 +126,7 @@ copy_build_artifacts() {
 rm -rf "$BUILD_DIR" "$OUT_DIR"
 mkdir -p "$BUILD_DIR" "$OUT_DIR"
 
-# ## Download + Extract ##
+## Download + Extract ##
 download
 cd "$BUILD_DIR"
 extract

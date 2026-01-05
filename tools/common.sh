@@ -86,8 +86,6 @@ extract() {
 		rm w7.tar.gz
 	fi
 
-	echo "$OPENBSD_PATCHES_URL"
-
 	# openbsd patches
 	if [ "$PLATFORM" = "openbsd" ]; then
 		cd "$ROOTDIR"
@@ -149,11 +147,17 @@ package() {
 
 ## Platform Stuff ##
 TAR="tar"
+SHARED=false
 
 case "$PLATFORM" in
 	freebsd|openbsd|solaris)
 		TAR="gtar"
+		SHARED=true
+		;;
+	linux)
+		SHARED=true
 		;;
 esac
 
 export TAR
+export SHARED
