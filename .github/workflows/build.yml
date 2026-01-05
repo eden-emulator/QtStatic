@@ -40,7 +40,7 @@ jobs:
         uses: crueter/ccache-action@master
         with:
           key: ${{ env.PLATFORM }}-${{ env.ARCH }}
-          restore-keys: ${{ env.PLATFORM }}${{ env.ARCH }}
+          restore-keys: ${{ env.PLATFORM }}-${{ env.ARCH }}
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
