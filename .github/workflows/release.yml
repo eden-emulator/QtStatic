@@ -44,7 +44,7 @@ jobs:
             macos-*/*.tar.zst*
             linux-*/*.tar.zst*
             freebsd-*/*.tar.zst*
-            # openbsd-*/*.tar.zst*
+            openbsd-*/*.tar.zst*
             # solaris-*/*.tar.zst*
 
           make_latest: true

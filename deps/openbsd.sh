@@ -17,4 +17,5 @@ pkg_add gawk \
 	ccache \
 	binutils \
 	pkgconf \
-	llvm-19.1.7p9
+	llvm-19.1.7p9 \
+	openssl-3.6.0p0v0

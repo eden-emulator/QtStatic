@@ -41,4 +41,6 @@ artifact "Linux (aarch64)" linux-aarch64
 artifact "macOS (arm64)" macos-universal
 # artifact "Solaris (amd64)" solaris-amd64
 artifact "FreeBSD (amd64)" freebsd-amd64
-# artifact "OpenBSD (amd64)" openbsd-amd64
+artifact "FreeBSD (aarch64)" freebsd-aarch64
+artifact "OpenBSD (amd64)" openbsd-amd64
+artifact "OpenBSD (aarch64)" openbsd-aarch64
