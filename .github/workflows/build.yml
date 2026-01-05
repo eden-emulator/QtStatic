@@ -37,7 +37,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1
+        uses: crueter/ccache-action@master
         with:
           key: ${{ env.PLATFORM }}-${{ env.ARCH }}
           restore-keys: ${{ env.PLATFORM }}
@@ -74,7 +74,7 @@ jobs:
           pacboy: >-
             toolchain:p vulkan-devel:p pkg-config:p
             nasm:p ffnvcodec-headers:p amf-headers:p
-            cmake:p ninja:p sccache:p
+            cmake:p ninja:p ccache:p
 
       - name: Build (MSYS)
         if: matrix.platform == 'mingw'

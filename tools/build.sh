@@ -83,12 +83,14 @@ configure() {
 	# UNIX builds shared because you do not want to bundle every Qt plugin under the sun
 	set -- "$@" -DBUILD_SHARED_LIBS="$SHARED"
 
+	[ "$SHARED" = true ] || LTO="$LTO -gc-binaries"
+
 	# These are the recommended configuration options from Qt
 	# We skip snca like quick3d, activeqt, etc.
 	# Also disable zstd, icu, and renderdoc; these are useless
 	# and cause more issues than they solve.
 	# shellcheck disable=SC2086
-	./configure -gc-binaries $LTO \
+	./configure $LTO \
 		-submodules qtbase,qtdeclarative,qttools,qtmultimedia -optimize-size -no-pch \
 		-skip qtlanguageserver,qtquicktimeline,qtactiveqt,qtquick3d,qtquick3dphysics,qtdoc,qt5compat \
 		-nomake tests -nomake examples \
