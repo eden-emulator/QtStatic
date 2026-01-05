@@ -10,7 +10,7 @@ export DIRECTORY="qt-$VERSION"
 export ARTIFACT="$DIRECTORY.tar.zst"
 
 # Download URLs and such
-_base="https://github.com/eden-emulator/QtStatic/releases/download/src"
+_base="https://github.com/crueter-ci/Qt/releases/download/src"
 export DOWNLOAD_URL="$_base/$ARTIFACT"
 
 # patches
