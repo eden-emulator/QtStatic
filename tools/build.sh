@@ -32,10 +32,11 @@ configure() {
 	if [ "$PLATFORM" = "windows" ]; then
 		# /Gy - function-sectors
 		# /Gw - data-sections
-		# /OPT:REF - gc-sections
-		# /OPT:ICF - identical code folding
 		# /EHs- /EHc- - EXCEPTIONS ARE FOR LOSERS
 		FLAGS="/Gy /Gw /OPT:REF /OPT:ICF /EHs- /EHc-"
+
+		# /OPT:REF - gc-sections
+		# /OPT:ICF - identical code folding
 		LDFLAGS="/OPT:REF /OPT:ICF"
 
 		# /DYNAMICBASE:NO - disable ASLR on amd64 bcz why not

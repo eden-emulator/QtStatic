@@ -40,7 +40,7 @@ jobs:
         uses: crueter/ccache-action@master
         with:
           key: ${{ env.PLATFORM }}-${{ env.ARCH }}
-          restore-keys: ${{ env.PLATFORM }}
+          restore-keys: ${{ env.PLATFORM }}${{ env.ARCH }}
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -224,7 +224,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1
         with:
           key: ${{ env.PLATFORM }}-${{ env.ARCH }}
-          restore-keys: ${{ env.PLATFORM }}-
+          restore-keys: ${{ env.PLATFORM }}-${{ env.ARCH }}
 
       - name: Deps
         run: ./deps/linux.sh
@@ -257,7 +257,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1
         with:
           key: ${{ env.PLATFORM }}-${{ env.ARCH }}
-          restore-keys: ${{ env.PLATFORM }}-
+          restore-keys: ${{ env.PLATFORM }}-${{ env.ARCH }}
 
       - name: Get Dependencies
         run: |
