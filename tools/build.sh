@@ -36,6 +36,7 @@ configure() {
 		# /OPT:ICF - identical code folding
 		# /EHs- /EHc- - EXCEPTIONS ARE FOR LOSERS
 		FLAGS="/Gy /Gw /OPT:REF /OPT:ICF /EHs- /EHc-"
+		LDFLAGS="/OPT:REF /OPT:ICF"
 
 		# /DYNAMICBASE:NO - disable ASLR on amd64 bcz why not
 		[ "$ARCH" != amd64 ] || FLAGS="$FLAGS /DYNAMICBASE:NO"
