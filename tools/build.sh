@@ -13,10 +13,15 @@ set -e
 
 ## Build Functions ##
 
-[ -z "$CCACHE_PATH" ] && CCACHE_PATH=$(which ccache || which sccache || echo "ccache")
-if command -v cygpath >/dev/null 2>&1; then
+if [ "$PLATFORM" = windows ] || [ "$PLATFORM" = mingw ]; then
+	CCACHE_PATH=$(which sccache)
 	CCACHE_PATH=$(cygpath -w "$CCACHE_PATH")
+else
+	CCACHE_PATH=$(which ccache)
 fi
+
+[ -z "$CCACHE_PATH" ] && CCACHE_PATH=$(which ccache || which sccache || echo "ccache")
+
 echo "Using ccache at: $CCACHE_PATH"
 
 show_stats() {
@@ -66,6 +71,12 @@ configure() {
 
 	if [ "$CCACHE" = true ]; then
 		set -- "$@" -DCMAKE_CXX_COMPILER_LAUNCHER="${CCACHE_PATH}" -DCMAKE_C_COMPILER_LAUNCHER="${CCACHE_PATH}"
+	fi
+
+	# I have no idea what's going on with MSVC, you almost have to wonder if it has something to do
+	# with them firing every single one of their developers in 2023
+	if [ "$PLATFORM" = "windows" ]; then
+		set -- "$@" -DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL
 	fi
 
 	# These are the recommended configuration options from Qt

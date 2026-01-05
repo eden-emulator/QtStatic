@@ -75,7 +75,7 @@ jobs:
           pacboy: >-
             toolchain:p vulkan-devel:p pkg-config:p
             nasm:p ffnvcodec-headers:p amf-headers:p
-            cmake:p ninja:p ccache:p
+            cmake:p ninja:p sccache:p
 
       - name: Build (MSYS)
         if: matrix.platform == 'mingw'
@@ -84,8 +84,6 @@ jobs:
       - name: Build (MSVC)
         if: matrix.platform == 'windows'
         run: |
-          # force static runtime FUCK YOU MICROSOFT
-          [ "$ARCH" = amd64 ] || export CL=" /MT"
           PLATFORM=${{ matrix.platform }} ./tools/build.sh
 
       - name: Upload Artifacts
