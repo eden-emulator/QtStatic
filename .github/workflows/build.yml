@@ -37,6 +37,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install zstd
+        if: matrix.platform == 'windows'
         run: |
           choco install zstandard
 
@@ -44,9 +45,7 @@ jobs:
         uses: crueter/ccache-action@marge
         with:
           key: ${{ matrix.platform }}-${{ matrix.os.arch }}
-          restore-keys: |
-            ${{ matrix.platform }}-${{ matrix.os.arch }}
-            ${{ matrix.platform }}
+          restore-keys: ${{ matrix.platform }}-${{ matrix.os.arch }}
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
