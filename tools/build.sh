@@ -18,8 +18,6 @@ if [ "$PLATFORM" = windows ] || [ "$PLATFORM" = mingw ]; then
 	CCACHE_PATH=$(cygpath -w "$CCACHE_PATH")
 fi
 
-echo "Using ccache at: $CCACHE_PATH"
-
 show_stats() {
 	"$CCACHE_PATH" -s
 }
@@ -34,10 +32,6 @@ configure() {
 		# /Gw - data-sections
 		# /EHs- /EHc- - EXCEPTIONS ARE FOR LOSERS
 		FLAGS="/Gy /Gw /EHs- /EHc-"
-
-		# /OPT:REF - gc-sections
-		# /OPT:ICF - identical code folding
-		LDFLAGS="/OPT:REF /OPT:ICF"
 
 		# /DYNAMICBASE:NO - disable ASLR on amd64 bcz why not
 		[ "$ARCH" != amd64 ] || FLAGS="$FLAGS /DYNAMICBASE:NO"
@@ -58,10 +52,13 @@ configure() {
 		set -- "$@" -DCMAKE_AR="$(which llvm-ar-19)" -DCMAKE_RANLIB="$(which llvm-ranlib-19)"
 	fi
 
-	# saves some linker time, but of course macOS doesn't support it :/
-	if [ "$PLATFORM" != macos ] && [ "$PLATFORM" != windows ]; then
-		LDFLAGS="-Wl,--gc-sections"
-	fi
+	# linker flags that save some time during link phase
+	# all of these are just garbage collection basically, also identical code folding
+	case "$PLATFORM" in
+		windows) LDFLAGS="/OPT:REF /OPT:ICF" ;;
+		macos) LDFLAGS="-Wl,-dead_strip" ;;
+		*) LDFLAGS="-Wl,--gc-sections" ;;
+	esac
 
 	# mingw and windows get absolutely clobbered if you try to LTO
 	if [ "$PLATFORM" = mingw ] || [ "$PLATFORM" = windows ]; then
@@ -73,6 +70,7 @@ configure() {
 	fi
 
 	if [ "$CCACHE" = true ]; then
+		echo "-- Using ccache at: $CCACHE_PATH"
 		set -- "$@" -DCMAKE_CXX_COMPILER_LAUNCHER="${CCACHE_PATH}" -DCMAKE_C_COMPILER_LAUNCHER="${CCACHE_PATH}"
 	fi
 
@@ -85,6 +83,7 @@ configure() {
 	# UNIX builds shared because you do not want to bundle every Qt plugin under the sun
 	set -- "$@" -DBUILD_SHARED_LIBS="$SHARED"
 
+	# also, gc-binaries can't be done on shared
 	[ "$SHARED" = true ] || LTO="$LTO -gc-binaries"
 
 	# These are the recommended configuration options from Qt
@@ -92,10 +91,9 @@ configure() {
 	# Also disable zstd, icu, and renderdoc; these are useless
 	# and cause more issues than they solve.
 	# shellcheck disable=SC2086
-	./configure $LTO \
-		-submodules qtbase,qtdeclarative,qttools,qtmultimedia -optimize-size -no-pch \
+	./configure $LTO -nomake tests -nomake examples -optimize-size -no-pch \
+		-submodules qtbase,qtdeclarative,qttools,qtmultimedia \
 		-skip qtlanguageserver,qtquicktimeline,qtactiveqt,qtquick3d,qtquick3dphysics,qtdoc,qt5compat \
-		-nomake tests -nomake examples \
 		-no-feature-icu -release -no-zstd -no-feature-qml-network -no-feature-libresolv -no-feature-dladdr \
 		-no-feature-sql -no-feature-xml -no-feature-dbus -no-feature-printdialog -no-feature-printer -no-feature-printsupport \
 		-no-feature-linguist -no-feature-designer -no-feature-assistant -no-feature-pixeltool -feature-filesystemwatcher -- "$@" \
