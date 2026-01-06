@@ -104,7 +104,10 @@ configure() {
 
 	# FFmpeg
 	case "$PLATFORM" in
-		macos|linux) MM="$MM -feature-ffmpeg -feature-thread"
+		macos|linux)
+			MM="$MM -feature-ffmpeg -feature-thread -ffmpeg-deploy -openssl-linked"
+			set -- "$@" -DOPENSSL_USE_STATIC_LIBS=ON
+			;;
 	esac
 
 	if [ "$CCACHE" = true ]; then
@@ -130,32 +133,6 @@ configure() {
 		windows|mingw|macos) ;;
 		*) SUBMODULES="$SUBMODULES,qtwayland"
 	esac
-
-	# ffmpeg and openssl SUCK
-	if command -v pkg-config >/dev/null 2>&1; then
-		# ubuntu
-		if [ "$PLATFORM" = linux ]; then
-			PKG_CONFIG_PATH="/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH"
-		# macos
-		elif [ "$PLATFORM" = macos ]; then
-			FFMPEG_DIR=$(brew --prefix ffmpeg 2>/dev/null || true)
-			if [ -n "$FFMPEG_DIR" ]; then
-				PKG_CONFIG_PATH="$FFMPEG_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
-				set -- "$@" -DFFMPEG_DIR="$FFMPEG_DIR"
-			fi
-		fi
-		export PKG_CONFIG_PATH
-
-		FFMPEG_PKGS="libavcodec libavformat libavutil libswresample libswscale openssl"
-
-		# shellcheck disable=SC2086
-		PKG_LIBS=$(pkg-config --static --libs $FFMPEG_PKGS 2>/dev/null || true)
-		if [ -n "$PKG_LIBS" ]; then
-			PKG_LIBS="-Wl,--start-group $PKG_LIBS -Wl,--end-group"
-			LDFLAGS="$LDFLAGS $PKG_LIBS"
-			set -- "$@" -DOPENSSL_ROOT_DIR=/usr -DOPENSSL_USE_STATIC_LIBS=ON
-		fi
-	fi
 
 	# These are the recommended configuration options from Qt
 	# We skip snca like quick3d, activeqt, etc.
