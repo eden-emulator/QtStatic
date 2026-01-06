@@ -121,6 +121,12 @@ configure() {
 		LTO="$LTO -static-runtime"
 	fi
 
+	# FUCK
+	if [ "$PLATFORM" = "macos" ]; then
+		FFMPEG_DIR=$(brew --prefix ffmpeg 2>/dev/null || true)
+		set -- "$@" -DFFMPEG_DIR="$FFMPEG_DIR"
+	fi
+
 	# UNIX builds shared because you do not want to bundle every Qt plugin under the sun
 	set -- "$@" -DBUILD_SHARED_LIBS="$SHARED"
 
