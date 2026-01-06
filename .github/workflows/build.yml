@@ -36,11 +36,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install zstd
+        if: matrix.platform == 'windows'
+        run: |
+          choco install zstandard
+
       - name: Setup ccache
-        uses: crueter/ccache-action@master
+        uses: crueter/ccache-action@marge
         with:
-          key: ${{ env.PLATFORM }}-${{ env.ARCH }}
-          restore-keys: ${{ env.PLATFORM }}-${{ env.ARCH }}
+          key: ${{ matrix.platform }}-${{ matrix.os.arch }}
+          restore-keys: ${{ matrix.platform }}-${{ matrix.os.arch }}
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -57,11 +62,6 @@ jobs:
         run: |
           # WHAT THE FUCK
           mklink /D "C:\Program Files\Microsoft Visual Studio\2022\Community" "C:\Program Files\Microsoft Visual Studio\2022\Enterprise"
-
-      - name: Install zstd
-        if: matrix.platform == 'windows'
-        run: |
-          choco install zstandard
 
       - name: Setup MSYS2 environment
         uses: msys2/setup-msys2@v2
