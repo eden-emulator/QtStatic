@@ -40,7 +40,7 @@ jobs:
         uses: crueter/ccache-action@master
         with:
           key: ${{ env.PLATFORM }}-${{ env.ARCH }}
-          restore-keys: ${{ env.PLATFORM }}${{ env.ARCH }}
+          restore-keys: ${{ env.PLATFORM }}-${{ env.ARCH }}
 
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
@@ -216,7 +216,6 @@ jobs:
           remove-codeql: 'true'
           remove-cached-tools: 'true'
           remove-large-packages: 'true'
-          verbose: 'true'
 
       - uses: actions/checkout@v4
 
@@ -225,6 +224,7 @@ jobs:
         with:
           key: ${{ env.PLATFORM }}-${{ env.ARCH }}
           restore-keys: ${{ env.PLATFORM }}-${{ env.ARCH }}
+          max-size: 2G
 
       - name: Deps
         run: ./deps/linux.sh

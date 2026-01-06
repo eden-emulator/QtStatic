@@ -33,7 +33,7 @@ configure() {
 		# /Gy - function-sectors
 		# /Gw - data-sections
 		# /EHs- /EHc- - EXCEPTIONS ARE FOR LOSERS
-		FLAGS="/Gy /Gw /OPT:REF /OPT:ICF /EHs- /EHc-"
+		FLAGS="/Gy /Gw /EHs- /EHc-"
 
 		# /OPT:REF - gc-sections
 		# /OPT:ICF - identical code folding
