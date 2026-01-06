@@ -56,18 +56,24 @@ configure() {
 	# all of these are just garbage collection basically, also identical code folding
 	case "$PLATFORM" in
 		windows) LDFLAGS="/OPT:REF /OPT:ICF" ;;
-		macos) LDFLAGS="-Wl,-dead_strip" ;;
+		macos) LDFLAGS="-Wl,-dead_strip -Wl,-dead_strip" ;;
 		*) LDFLAGS="-Wl,--gc-sections" ;;
 	esac
 
-	# mingw and windows get absolutely clobbered if you try to LTO
-	if [ "$PLATFORM" = mingw ] || [ "$PLATFORM" = windows ]; then
-		LTO="$LTO -no-ltcg"
-	else
-		LTO="$LTO -ltcg"
-		# saves a good chunk of space otherwise
-		FLAGS="$FLAGS -fomit-frame-pointer -fno-unwind-tables"
-	fi
+	# LTO
+	# For some reason it seems like MacOS and Windows get horrifically clobbered by LTO.
+	case "$PLATFORM" in
+		mingw|windows|macos) LTO="$LTO -no-ltcg" ;;
+		*) LTO="$LTO -ltcg" ;;
+	esac
+
+	# Omit frame pointer and unwind tables on non-Windows platforms
+	# saves a bit of space
+	case "$PLATFORM" in
+		mingw|windows) ;;
+		*) FLAGS="$FLAGS -fomit-frame-pointer -fno-unwind-tables" ;;
+	esac
+
 
 	if [ "$CCACHE" = true ]; then
 		echo "-- Using ccache at: $CCACHE_PATH"
