@@ -119,6 +119,9 @@ configure() {
 		pkg-config --cflags --libs libva
 		printf -- "-- * libva-drm pkg-config: "
 		pkg-config --cflags --libs libva-drm
+
+		# force libva custom dir into the thing
+		FLAGS="$FLAGS $(pkg-config --cflags libva-drm)"
 	fi
 
 	# libdrm

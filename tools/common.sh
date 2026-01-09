@@ -99,6 +99,12 @@ extract() {
 		curl -L "$SOLARIS_PATCHES_URL" -o "$ROOTDIR/artifacts/solaris-patches-$VERSION.tar.zst"
 		mk/solaris.sh apply
 	fi
+
+	# lmao
+	# -i isn't POSIX compliant but MinGW environments are strictly GNU so it's fine.
+	if mingw && arm; then
+		sed -i '10i #include <arm_acle.h>' "$DIRECTORY"/qtbase/src/corelib/thread/qyieldcpu.h
+	fi
 }
 
 # generate sha1, 256, and 512 sums for a file
@@ -194,6 +200,14 @@ freebsd() {
 
 solaris() {
 	[ "$PLATFORM" = solaris ]
+}
+
+arm() {
+	[ "$ARCH" = arm64 ] || [ "$ARCH" = aarch64 ]
+}
+
+amd() {
+	[ "$ARCH" = amd64 ]
 }
 
 # get me a unix with no macOS
