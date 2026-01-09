@@ -31,7 +31,7 @@ must_install() {
 	done
 }
 
-must_install curl zstd cmake xz ninja unzip ar
+must_install curl zstd cmake xz ninja unzip
 
 if [ "$PLATFORM" = "openbsd" ]; then
 	must_install llvm-ar-19 llvm-ranlib-19

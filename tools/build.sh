@@ -99,14 +99,16 @@ configure() {
 
 	# FFmpeg + OpenSSL
 	MM="$MM -feature-ffmpeg -feature-thread -openssl-linked"
-	set -- "$@" -DOPENSSL_USE_STATIC_LIBS=ON
-	set -- "$@" -DFFMPEG_DIR="$FFMPEG_DIR" -DOPENSSL_ROOT_DIR="$OPENSSL_DIR"
 
-	echo "-- * FFmpeg dir: $FFMPEG_DIR, contents:"
-	find "$FFMPEG_DIR" -type f
+	if windows; then
+		FFMPEG_DIR="$(cygpath -w "$FFMPEG_DIR")"
+		OPENSSL_DIR="$(cygpath -w "$OPENSSL_DIR")"
+	fi
+	
+	set -- "$@" -DOPENSSL_USE_STATIC_LIBS=ON -DFFMPEG_DIR="$FFMPEG_DIR" -DOPENSSL_ROOT_DIR="$OPENSSL_DIR"
 
-	echo "-- * OpenSSL dir: $OPENSSL_DIR, contents:"
-	find "$OPENSSL_DIR" -type f
+	echo "-- * FFmpeg dir: $FFMPEG_DIR"
+	echo "-- * OpenSSL dir: $OPENSSL_DIR"
 
 	# libva
 	if unix; then
@@ -179,13 +181,13 @@ copy_build_artifacts() {
 }
 
 ## Cleanup ##
-rm -rf "$BUILD_DIR" "$OUT_DIR"
+# rm -rf "$BUILD_DIR" "$OUT_DIR"
 mkdir -p "$BUILD_DIR" "$OUT_DIR"
 
 ## Download + Extract ##
-download
+# download
 cd "$BUILD_DIR"
-extract
+# extract
 
 ## Configure ##
 cd "$ROOTDIR/$BUILD_DIR/$DIRECTORY"
