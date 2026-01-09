@@ -104,7 +104,7 @@ configure() {
 		FFMPEG_DIR="$(cygpath -w "$FFMPEG_DIR")"
 		OPENSSL_DIR="$(cygpath -w "$OPENSSL_DIR")"
 	fi
-	
+
 	set -- "$@" -DOPENSSL_USE_STATIC_LIBS=ON -DFFMPEG_DIR="$FFMPEG_DIR" -DOPENSSL_ROOT_DIR="$OPENSSL_DIR"
 
 	echo "-- * FFmpeg dir: $FFMPEG_DIR"
@@ -181,13 +181,13 @@ copy_build_artifacts() {
 }
 
 ## Cleanup ##
-# rm -rf "$BUILD_DIR" "$OUT_DIR"
+rm -rf "$BUILD_DIR" "$OUT_DIR"
 mkdir -p "$BUILD_DIR" "$OUT_DIR"
 
 ## Download + Extract ##
-# download
+download
 cd "$BUILD_DIR"
-# extract
+extract
 
 ## Configure ##
 cd "$ROOTDIR/$BUILD_DIR/$DIRECTORY"
