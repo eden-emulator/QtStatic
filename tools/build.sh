@@ -69,10 +69,11 @@ configure() {
 
 	# LTO
 	# For some reason it seems like MacOS and Windows get horrifically clobbered by LTO.
-	case "$PLATFORM" in
-		mingw|windows|macos) LTO="$LTO -no-ltcg" ;;
-		*) LTO="$LTO -ltcg" ;;
-	esac
+	if unix; then
+		LTO="$LTO -no-ltcg" 
+	else
+		LTO="$LTO -ltcg"
+	fi
 
 	# Omit frame pointer and unwind tables on non-Windows platforms
 	# saves a bit of space
@@ -145,10 +146,7 @@ configure() {
 
 	# Submodules
 	SUBMODULES="qtbase,qtdeclarative,qttools,qtmultimedia"
-	case "$PLATFORM" in
-		windows|mingw|macos) ;;
-		*) SUBMODULES="$SUBMODULES,qtwayland"
-	esac
+	! unix || SUBMODULES="$SUBMODULES,qtwayland"
 
 	# These are the recommended configuration options from Qt
 	# We skip snca like quick3d, activeqt, etc.
@@ -160,6 +158,7 @@ configure() {
 		-skip qtlanguageserver,qtquicktimeline,qtactiveqt,qtquick3d,qtquick3dphysics,qtdoc,qt5compat \
 		-no-feature-icu -release -no-zstd -no-feature-qml-network -no-feature-libresolv -no-feature-dladdr \
 		-no-feature-sql -no-feature-xml -no-feature-dbus -no-feature-printdialog -no-feature-printer -no-feature-printsupport \
+		-feature-vulkan \
 		-no-feature-linguist -no-feature-designer -no-feature-assistant -no-feature-pixeltool -feature-filesystemwatcher -- "$@" \
 		-DCMAKE_CXX_FLAGS="$FLAGS" -DCMAKE_C_FLAGS="$FLAGS" -DCMAKE_OSX_DEPLOYMENT_TARGET="${MACOSX_DEPLOYMENT_TARGET}" \
 		-DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS"
