@@ -71,7 +71,7 @@ configure() {
 	# LTO
 	# For some reason it seems like MacOS and Windows get horrifically clobbered by LTO.
 	if unix; then
-		LTO="$LTO -ltcg" 
+		LTO="$LTO -ltcg"
 	else
 		LTO="$LTO -no-ltcg"
 	fi
@@ -121,7 +121,8 @@ configure() {
 		pkg-config --cflags --libs libva-drm
 
 		# force libva custom dir into the thing
-		FLAGS="$FLAGS $(pkg-config --cflags libva-drm)"
+		FLAGS="$FLAGS $(pkg-config --cflags --libs libva-drm)"
+		LDFLAGS="$LDFLAGS $(pkg-config --cflags --libs libva-drm)"
 	fi
 
 	# libdrm
