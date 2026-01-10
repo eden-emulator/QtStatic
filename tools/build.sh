@@ -42,7 +42,8 @@ configure() {
 		# /Gy - function-sectors
 		# /Gw - data-sections
 		# /EHs- /EHc- - EXCEPTIONS ARE FOR LOSERS
-		FLAGS="/Gy /Gw /EHs- /EHc-"
+		# /await:strict - force new coroutine abi
+		FLAGS="/Gy /Gw /EHs- /EHc- /await:strict"
 
 		# /DYNAMICBASE:NO - disable ASLR on amd64 bcz why not
 		[ "$ARCH" != amd64 ] || FLAGS="$FLAGS /DYNAMICBASE:NO"
