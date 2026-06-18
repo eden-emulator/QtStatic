@@ -48,9 +48,13 @@ env:
 
 jobs:
   download:
+    name: Download
     runs-on: ubuntu-slim
     steps:
       - uses: actions/checkout@v6
+
+      - name: Deps
+        run: ./deps/source.sh
 
       - name: Download and Extract
         run: ./tools/download.sh
