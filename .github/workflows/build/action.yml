@@ -48,27 +48,21 @@ runs:
 
     - name: Patch Source Tree
       shell: ${{ inputs.shell }}
-      run: |
-        # Patch Source Tree
-        ./tools/patch.sh
+      run: ./tools/patch.sh
       env:
         PLATFORM: ${{ inputs.platform }}
         ARCH: ${{ inputs.arch }}
 
     - name: Configure
       shell: ${{ inputs.shell }}
-      run: |
-        # Configure
-        ./tools/configure.sh
+      run: ./tools/configure.sh
       env:
         PLATFORM: ${{ inputs.platform }}
         ARCH: ${{ inputs.arch }}
 
     - name: Build
       shell: ${{ inputs.build-shell }}
-      run: |
-        # Build
-        cmake --build build --parallel
+      run: cmake --build build --parallel
       env:
         PLATFORM: ${{ inputs.platform }}
         ARCH: ${{ inputs.arch }}

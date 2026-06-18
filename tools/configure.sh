@@ -264,6 +264,8 @@ configure() {
 	# Enabled submodules.                   #
 	#########################################
 
+	: "${SUBMODULES:=qtbase}"
+
 	if unix; then SUBMODULES+=,qtwayland; fi
 
 	CONFIG+=(-submodules "$SUBMODULES")

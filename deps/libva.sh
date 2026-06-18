@@ -7,7 +7,7 @@ _name=libva
 must_install git make
 
 if [ ! -d "$_dir" ]; then
-	_group "Building $_name."
+	_group "Building $_name"
 
 	cd "$ROOTDIR/$BUILD_DIR"
 

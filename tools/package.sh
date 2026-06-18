@@ -13,8 +13,7 @@ must_install cmake zstd "$TAR"
 copy_build_artifacts() {
     _group "Copying artifacts"
 
-	cd "$ROOTDIR/$BUILD_DIR/$DIRECTORY"
-	cmake --install . --prefix "$OUT_DIR"
+	cmake --install "$BUILD_DIR" --prefix "$OUT_DIR"
     rm -rf "$OUT_DIR"/doc
 
 	# TODO(crueter): See if some unnecessary executables can be cleaned out. They take up >half of the

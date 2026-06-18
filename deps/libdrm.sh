@@ -8,6 +8,7 @@ must_install meson ninja git
 
 if [ ! -d "$_dir" ]; then
 	_group "Building $_name"
+
 	cd "$ROOTDIR/$BUILD_DIR"
 
 	[ -d "$_name" ] || git clone "$_url" --depth 1
