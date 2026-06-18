@@ -6,12 +6,6 @@ set -e
 
 . tools/common.sh
 
-ls "$ROOTDIR"
-echo "------------"
-ls "$BUILD_DIR"
-echo "------------"
-ls "$ROOTDIR/$BUILD_DIR/$DIRECTORY"
-
 must_install cmake ninja
 
 CCACHE_PATH=$(which ccache || echo "ccache")
@@ -354,10 +348,8 @@ configure() {
 	_end
 
 	_group "Configuring $PRETTY_NAME"
-	set -x
-	ls
+	chmod a+x configure
 	./configure "${CONFIG[@]}" -- "${CMAKE[@]}"
-	set +x
 	_end
 }
 
