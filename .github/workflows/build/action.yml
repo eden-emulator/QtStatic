@@ -33,7 +33,7 @@ runs:
         Set-MpPreference -DisableBehaviorMonitoring $true
         Set-MpPreference -DisableArchiveScanning $true
 
-        tar xf qt-${{ env.VERSION }}.tar.zst -C build
+        tar xf qt-${{ env.VERSION }}.tar.zst
 
     - name: Extract (UNIX)
       if: runner.os != 'Windows'
