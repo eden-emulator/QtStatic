@@ -6,6 +6,10 @@ set -e
 
 . tools/common.sh
 
+mkdir -p "$ROOTDIR"/artifacts
+
+must_install cmake zstd "$TAR"
+
 copy_build_artifacts() {
     _group "Copying artifacts"
 
@@ -37,16 +41,16 @@ strip_libs() {
 	fi
 }
 
-# generate sha1, 256, and 512 sums for a file
+# generate sha512 sum for a file
 sums() {
 	for file in "$@"; do
-		for algo in 1 256 512; do
-			if ! command -v sha${algo}sum >/dev/null 2>&1; then
-				sha${algo} "$file" | awk '{print $4}' | tr -d "\n" >"$file".sha${algo}sum
-			else
-				sha${algo}sum "$file" | cut -d " " -f1 | tr -d "\n" >"$file".sha${algo}sum
-			fi
-		done
+		if ! command -v sha512sum >/dev/null 2>&1; then
+			must_install sha512
+			sha512 "$file" | awk '{print $4}' | tr -d "\n" >"$file".sha512sum
+		else
+			must_install sha512sum
+			sha512sum "$file" | cut -d " " -f1 | tr -d "\n" >"$file".sha512sum
+		fi
 	done
 }
 

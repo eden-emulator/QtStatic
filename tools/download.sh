@@ -6,6 +6,20 @@ set -e
 
 . tools/common.sh
 
+must_install curl "$TAR"
+
+case "$ARTIFACT" in
+*.zip) must_install unzip ;;
+*.zst) must_install zstd ;;
+*.gz) must_install gzip ;;
+*.xz) must_install xz ;;
+*.7z) must_install 7z ;;
+*)
+	echo "-- Unsupported extension ${ARTIFACT##.*}"
+	exit 1
+	;;
+esac
+
 # download
 download() {
 	_group "Downloading $PRETTY_NAME $VERSION"
@@ -52,7 +66,7 @@ extract() {
 }
 
 rm -rf "$BUILD_DIR"
-mkdir -p "$BUILD_DIR" "$OUT_DIR"
+mkdir -p "$BUILD_DIR"
 
 ## Download + Extract ##
 download

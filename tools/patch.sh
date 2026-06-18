@@ -6,6 +6,8 @@ set -e
 
 . tools/common.sh
 
+must_install curl "$TAR" patch
+
 cd "$ROOTDIR/$BUILD_DIR"
 
 # qt6windows7 patch

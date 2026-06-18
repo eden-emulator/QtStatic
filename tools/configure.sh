@@ -6,6 +6,8 @@ set -e
 
 . tools/common.sh
 
+must_install cmake ninja
+
 CCACHE_PATH=$(which ccache || echo "ccache")
 if [ "$PLATFORM" = windows ] || [ "$PLATFORM" = mingw ]; then
 	CCACHE_PATH=$(cygpath -w "$CCACHE_PATH")
@@ -286,6 +288,8 @@ configure() {
 		CONFIG+=(-skip "$SKIP")
 	fi
 
+	IFS=" "
+
 	#########################################
 	# Linker flags.                         #
 	#########################################
@@ -330,8 +334,6 @@ configure() {
 	#########################################
 	## NOW CONFIGURE!                      ##
 	#########################################
-
-	IFS=" "
 
 	echo "-- Compiler flags: $FLAGS"
 	echo "-- Linker flags: $LDFLAGS"

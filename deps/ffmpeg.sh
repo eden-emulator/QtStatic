@@ -8,6 +8,8 @@ _dir="$ROOTDIR/$_name-$PLATFORM-$ARCH-$_version"
 _download="https://github.com/crueter-ci/$_repo/releases/download/v$_version/$_name-$PLATFORM-$ARCH-$_version.tar.zst"
 _artifact="$_name-$PLATFORM-$ARCH-$_version.tar.zst"
 
+must_install curl "$TAR"
+
 if [ ! -d "$_dir" ]; then
 	_group "Downloading $_repo"
 	echo "$_download"
