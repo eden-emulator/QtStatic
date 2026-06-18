@@ -9,6 +9,8 @@ set -e
 ls "$ROOTDIR"
 echo "------------"
 ls "$BUILD_DIR"
+echo "------------"
+ls "$ROOTDIR/$BUILD_DIR/$DIRECTORY"
 
 must_install cmake ninja
 
@@ -353,6 +355,7 @@ configure() {
 
 	_group "Configuring $PRETTY_NAME"
 	set -x
+	ls
 	./configure "${CONFIG[@]}" -- "${CMAKE[@]}"
 	set +x
 	_end
