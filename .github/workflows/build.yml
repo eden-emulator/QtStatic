@@ -96,7 +96,6 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Install zstd and vulkan
-        if: matrix.platform == 'windows'
         uses: crueter-ci/install-tools@master
         with:
           zstd: true
