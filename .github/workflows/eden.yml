@@ -9,22 +9,9 @@ permissions:
   contents: write
 
 jobs:
-  qt-6-7-3:
-    name: Qt 6.7.3
-    uses: ./.github/workflows/platforms.yml
-    secrets: inherit
-    with:
-      build-windows: false
-      build-linux: false
-      build-macos: true
-      version: 6.7.3
-      release: true
-      submodules: qtbase,qttools,qtcharts
-      repo: Eden-CI/Qt
-
   qt-6-11-1:
     name: Qt 6.11.1
-    uses: ./.github/workflows/platforms.yml
+    uses: ./.github/workflows/build.yml
     secrets: inherit
     with:
       build-windows: true

@@ -1,0 +1,59 @@
+name: Build
+description: build and etc.
+
+inputs:
+  arch:
+    description: Architecture label
+    required: true
+  platform:
+    description: Platform
+    required: true
+  label:
+    description: Platform label (packaging only)
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Download
+      uses: actions/download-artifact@v8
+      with:
+        name: source
+
+    - name: Configure
+      shell: bash
+      run: ./tools/configure.sh
+      env:
+        PLATFORM: ${{ inputs.platform }}
+        ARCH: ${{ inputs.arch }}
+
+    - name: Patch Source Tree
+      shell: bash
+      run: ./tools/patch.sh
+      env:
+        PLATFORM: ${{ inputs.platform }}
+        ARCH: ${{ inputs.arch }}
+
+    - name: Build
+      shell: bash
+      run: ./tools/build.sh
+      env:
+        PLATFORM: ${{ inputs.platform }}
+        ARCH: ${{ inputs.arch }}
+
+    - name: Package
+      shell: bash
+      run: ./tools/package.sh
+      env:
+        PLATFORM: ${{ inputs.platform }}
+        ARCH: ${{ inputs.arch }}
+        PKGNAME: ${{ inputs.label }}
+
+    - name: Upload
+      uses: ./.github/workflows/upload
+      with:
+        repo: ${{ env.UPLOAD_REPO }}
+        version: ${{ env.VERSION }}
+        release: ${{ env.UPLOAD_RELEASE }}
+        artifact: ${{ inputs.label }}-${{ inputs.arch }}
+        token: ${{ env.GH_TOKEN }}

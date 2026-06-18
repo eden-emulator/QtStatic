@@ -36,13 +36,33 @@ on:
         type: string
         default: crueter-ci/Qt
 
+# TODO: Timestamp-based releases
 env:
   CCACHE: "true"
   VERSION: ${{ inputs.version }}
   SUBMODULES: ${{ inputs.submodules }}
+  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  UPLOAD_REPO: ${{ inputs.repo }}
+  UPLOAD_RELEASE: ${{ inputs.release }}
 
 jobs:
+  download:
+    runs-on: ubuntu-slim
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Download and Extract
+        run: ./tools/download.sh
+
+      - name: Upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: source
+          path: build
+
   windows:
+    needs: [download]
     if: ${{ inputs.build-windows }}
     name: "${{ matrix.platform }} (${{ matrix.os.arch }})"
     runs-on: ${{ matrix.os.runs-on }}
@@ -70,9 +90,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Install zstd
+      - name: Install zstd and vulkan
         if: matrix.platform == 'windows'
-        run: choco install zstandard
+        uses: crueter-ci/install-tools@master
+        with:
+          zstd: true
+          vulkan: true
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@main
@@ -116,24 +139,14 @@ jobs:
             freetype:p libtiff:p
           cache: false
 
-      - name: Build (MSYS)
-        if: matrix.platform == 'mingw'
-        run: ./tools/build.sh
-
-      - name: Build (MSVC)
-        if: matrix.platform == 'windows'
-        run: PLATFORM=${{ matrix.platform }} ./tools/build.sh
-
-      - name: Upload
-        uses: ./.github/workflows/upload
+      - name: Build
+        uses: ./.github/workflows/build
         with:
-          repo: ${{ inputs.repo }}
-          version: ${{ inputs.version }}
-          release: ${{ inputs.release }}
-          artifact: ${{ matrix.platform }}-${{ matrix.os.arch }}
-          token: ${{ secrets.GH_TOKEN }}
+          arch: ${{ matrix.os.arch }}
+          platform: ${{ matrix.platform }}
 
   arch:
+    needs: [download]
     if: ${{ inputs.build-linux }}
     name: "Arch Linux (${{ matrix.arch }})"
     runs-on: ${{ matrix.runs-on }}
@@ -152,7 +165,6 @@ jobs:
       ARCH: ${{ matrix.arch }}
       PLATFORM: linux
       PACKAGE: true
-      PKGNAME: archlinux
 
     steps:
       - uses: actions/checkout@v6
@@ -170,18 +182,14 @@ jobs:
         run: ./deps/arch.sh
 
       - name: Build
-        run: ./tools/build.sh
-
-      - name: Upload
-        uses: ./.github/workflows/upload
+        uses: ./.github/workflows/build
         with:
-          repo: ${{ inputs.repo }}
-          version: ${{ inputs.version }}
-          release: ${{ inputs.release }}
-          artifact: archlinux-${{ matrix.arch }}
-          token: ${{ secrets.GH_TOKEN }}
+          arch: ${{ matrix.arch }}
+          platform: linux
+          pkgname: archlinux
 
   linux:
+    needs: [download]
     if: ${{ inputs.build-linux }}
     name: "Linux (${{ matrix.arch }})"
     runs-on: ${{ matrix.runs-on }}
@@ -214,18 +222,13 @@ jobs:
         run: ./deps/linux.sh
 
       - name: Build
-        run: ./tools/build.sh
-
-      - name: Upload
-        uses: ./.github/workflows/upload
+        uses: ./.github/workflows/build
         with:
-          repo: ${{ inputs.repo }}
-          version: ${{ inputs.version }}
-          release: ${{ inputs.release }}
-          artifact: linux-${{ matrix.arch }}
-          token: ${{ secrets.GH_TOKEN }}
+          arch: ${{ matrix.arch }}
+          platform: linux
 
   macos:
+    needs: [download]
     if: ${{ inputs.build-macos }}
     name: "macOS (universal)"
     runs-on: macos-latest
@@ -233,8 +236,8 @@ jobs:
       fail-fast: false
 
     env:
-      PLATFORM: macos
       ARCH: universal
+      PLATFORM: macos
 
     steps:
       - uses: actions/checkout@v6
@@ -249,24 +252,14 @@ jobs:
           install: binary
           max-size: 2G
 
-      - name: Get Dependencies
-        run: |
-          chmod a+x ./deps/macos.sh
-          ./deps/macos.sh
+      - name: Deps
+        run: ./deps/macos.sh
 
       - name: Build
-        run: |
-          chmod a+x ./tools/build.sh
-          ./tools/build.sh
-
-      - name: Upload
-        uses: ./.github/workflows/upload
+        uses: ./.github/workflows/build
         with:
-          repo: ${{ inputs.repo }}
-          version: ${{ inputs.version }}
-          release: ${{ inputs.release }}
-          artifact: macos-universal
-          token: ${{ secrets.GH_TOKEN }}
+          arch: universal
+          platform: macos
 
   release:
     name: Release
@@ -279,7 +272,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
           pattern: '*-${{ inputs.version }}'
@@ -306,7 +299,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Download artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
           pattern: '*-${{ inputs.version }}'

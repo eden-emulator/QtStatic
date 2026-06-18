@@ -1,7 +1,7 @@
 /qt-*
 *.tar.*
 /artifacts
-build
+/build
 /out
 /ffmpeg*
 /openssl*
