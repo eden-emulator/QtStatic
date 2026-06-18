@@ -2,7 +2,7 @@
 
 # shellcheck disable=SC1091
 
-set -ex
+set -e
 
 . tools/common.sh
 
