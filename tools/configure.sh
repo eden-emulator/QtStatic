@@ -2,9 +2,12 @@
 
 # shellcheck disable=SC1091
 
-set -e
+set -ex
 
 . tools/common.sh
+
+ls "$ROOTDIR"
+ls "$BUILD_DIR"
 
 must_install cmake ninja
 
