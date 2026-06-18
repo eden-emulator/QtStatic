@@ -18,7 +18,7 @@ on:
       windows-runner:
         description: windows runner to use for amd64
         type: string
-        default: windows-2025
+        default: windows-2025-vs2026
       version:
         description: qt version
         type: string
