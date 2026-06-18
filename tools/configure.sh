@@ -351,7 +351,9 @@ configure() {
 	_end
 
 	_group "Configuring $PRETTY_NAME"
+	set -x
 	./configure "${CONFIG[@]}" -- "${CMAKE[@]}"
+	set +x
 	_end
 }
 
