@@ -30,7 +30,6 @@ fi
 # cmake
 configure() {
 	_group "Setting up configure flags"
-	cd "$ROOTDIR/$BUILD_DIR/$DIRECTORY"
 
 	## Conditionals ##
 	[[ $SUBMODULES != *multimedia* ]] || multimedia=true
@@ -348,8 +347,8 @@ configure() {
 	_end
 
 	_group "Configuring $PRETTY_NAME"
-	# chmod a+x configure ./*/configure
-	./configure "${CONFIG[@]}" -- "${CMAKE[@]}"
+	cd "$ROOTDIR/$BUILD_DIR"
+	"$ROOTDIR/$DIRECTORY"/configure "${CONFIG[@]}" -- "${CMAKE[@]}"
 	_end
 }
 

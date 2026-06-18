@@ -11,6 +11,10 @@ inputs:
   label:
     description: Platform label (packaging only)
     required: false
+  shell:
+    description: Shell to use for running scripts
+    default: bash
+    required: false
 
 runs:
   using: composite
@@ -24,44 +28,52 @@ runs:
       if: runner.os == 'Windows'
       shell: pwsh
       run: |
+        # Extract
         Set-MpPreference -DisableRealtimeMonitoring $true
         Set-MpPreference -DisableBehaviorMonitoring $true
         Set-MpPreference -DisableArchiveScanning $true
 
-        mkdir build
         tar xf qt-${{ env.VERSION }}.tar.zst -C build
 
     - name: Extract (UNIX)
       if: runner.os != 'Windows'
-      shell: bash
+      shell: ${{ inputs.shell }}
       run: |
-        mkdir build
-        tar xf qt-${{ env.VERSION }}.tar.zst -C build
+        # Extract
+        tar xf qt-${{ env.VERSION }}.tar.zst
 
-    - name: Configure
-      shell: bash
-      run: ./tools/configure.sh
+    - name: Patch Source Tree
+      shell: ${{ inputs.shell }}
+      run: |
+        # Patch Source Tree
+        ./tools/patch.sh
       env:
         PLATFORM: ${{ inputs.platform }}
         ARCH: ${{ inputs.arch }}
 
-    - name: Patch Source Tree
-      shell: bash
-      run: ./tools/patch.sh
+    - name: Configure
+      shell: ${{ inputs.shell }}
+      run: |
+        # Configure
+        ./tools/configure.sh
       env:
         PLATFORM: ${{ inputs.platform }}
         ARCH: ${{ inputs.arch }}
 
     - name: Build
-      shell: bash
-      run: ./tools/build.sh
+      shell: ${{ inputs.shell }}
+      run: |
+        # Build
+        cmake --build build --parallel
       env:
         PLATFORM: ${{ inputs.platform }}
         ARCH: ${{ inputs.arch }}
 
     - name: Package
-      shell: bash
-      run: ./tools/package.sh
+      shell: ${{ inputs.shell }}
+      run: |
+        # Package
+        ./tools/package.sh
       env:
         PLATFORM: ${{ inputs.platform }}
         ARCH: ${{ inputs.arch }}

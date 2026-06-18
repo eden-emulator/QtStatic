@@ -56,7 +56,7 @@ jobs:
       - name: Deps
         run: ./deps/source.sh
 
-      - name: Download and Extract
+      - name: Download
         run: ./tools/download.sh
 
       - name: Upload
@@ -87,10 +87,6 @@ jobs:
     env:
       ARCH: ${{ matrix.os.arch }}
       PLATFORM: ${{ matrix.platform }}
-
-    defaults:
-      run:
-        shell: ${{ matrix.platform == 'mingw' && 'msys2 {0}' || 'bash' }}
 
     steps:
       - uses: actions/checkout@v6
@@ -149,6 +145,7 @@ jobs:
           arch: ${{ matrix.os.arch }}
           platform: ${{ matrix.platform }}
           label: ${{ matrix.platform }}
+          shell: ${{ matrix.platform == 'mingw' && 'msys2 {0}' || 'bash' }}
 
   arch:
     needs: [download]
