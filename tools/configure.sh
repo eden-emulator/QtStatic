@@ -348,7 +348,7 @@ configure() {
 	_end
 
 	_group "Configuring $PRETTY_NAME"
-	chmod a+x configure
+	chmod a+x configure ./*/configure
 	./configure "${CONFIG[@]}" -- "${CMAKE[@]}"
 	_end
 }
