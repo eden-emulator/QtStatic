@@ -7,6 +7,7 @@ set -e
 . tools/common.sh
 
 ls "$ROOTDIR"
+echo "------------"
 ls "$BUILD_DIR"
 
 must_install cmake ninja
