@@ -10,6 +10,7 @@ jobs:
   qt-6-11-1:
     name: Qt 6.11.0
     uses: ./.github/workflows/build.yml
+    secrets: inherit
     with:
       build-windows: true
       build-linux: true

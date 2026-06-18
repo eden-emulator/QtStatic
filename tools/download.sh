@@ -10,9 +10,9 @@ must_install curl "$TAR"
 
 case "$ARTIFACT" in
 *.zip) must_install unzip ;;
-*.zst) must_install zstd ;;
-*.gz) must_install gzip ;;
-*.xz) must_install xz ;;
+*.tar.zst) must_install zstd ;;
+*.tar.gz) must_install gzip ;;
+*.tar.xz) must_install xz ;;
 *.7z) must_install 7z ;;
 *)
 	echo "-- Unsupported extension ${ARTIFACT##.*}"
@@ -57,10 +57,12 @@ extract() {
 	rm -fr "$DIRECTORY"
 
 	case "$ARTIFACT" in
-	*.zip) unzip "$ROOTDIR/$ARTIFACT" >/dev/null ;;
-	*.tar.*) $TAR xf "$ROOTDIR/$ARTIFACT" >/dev/null ;;
-	*.7z) 7z x "$ROOTDIR/$ARTIFACT" >/dev/null ;;
+	*.zip) unzip "$ROOTDIR/$ARTIFACT" ;;
+	*.tar.*) $TAR xf "$ROOTDIR/$ARTIFACT" ;;
+	*.7z) 7z x "$ROOTDIR/$ARTIFACT" ;;
 	esac
+
+	echo "-- Succeeded"
 
 	_end
 }

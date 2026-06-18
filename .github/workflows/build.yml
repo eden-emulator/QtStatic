@@ -190,7 +190,7 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
           platform: linux
-          pkgname: archlinux
+          label: archlinux
 
   linux:
     needs: [download]
