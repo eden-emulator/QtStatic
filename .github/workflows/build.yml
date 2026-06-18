@@ -146,6 +146,7 @@ jobs:
           platform: ${{ matrix.platform }}
           label: ${{ matrix.platform }}
           shell: ${{ matrix.platform == 'mingw' && 'msys2 {0}' || 'bash' }}
+          build-shell: ${{ matrix.platform == 'mingw' && 'msys2 {0}' || 'pwsh' }}
 
   arch:
     needs: [download]

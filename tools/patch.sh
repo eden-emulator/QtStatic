@@ -18,6 +18,5 @@ done
 # lmao
 # -i isn't POSIX compliant but MinGW environments are strictly GNU so it's fine.
 if mingw && arm; then
-	cd "$ROOTDIR/$BUILD_DIR"
-	sed -i '10i #include <arm_acle.h>' "$DIRECTORY"/qtbase/src/corelib/thread/qyieldcpu.h
+	sed -i '10i #include <arm_acle.h>' /qtbase/src/corelib/thread/qyieldcpu.h
 fi

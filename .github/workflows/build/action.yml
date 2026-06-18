@@ -15,6 +15,10 @@ inputs:
     description: Shell to use for running scripts
     default: bash
     required: false
+  build-shell:
+    description: Shell to use for running CMake
+    default: bash
+    required: false
 
 runs:
   using: composite
@@ -61,7 +65,7 @@ runs:
         ARCH: ${{ inputs.arch }}
 
     - name: Build
-      shell: ${{ inputs.shell }}
+      shell: ${{ inputs.build-shell }}
       run: |
         # Build
         cmake --build build --parallel
