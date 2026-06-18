@@ -1,0 +1,87 @@
+name: Build
+description: build and etc.
+
+inputs:
+  arch:
+    description: Architecture label
+    required: true
+  platform:
+    description: Platform
+    required: true
+  label:
+    description: Platform label (packaging only)
+    required: false
+  shell:
+    description: Shell to use for running scripts
+    default: bash
+    required: false
+  build-shell:
+    description: Shell to use for running CMake
+    default: bash
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - name: Download
+      uses: actions/download-artifact@v8
+      with:
+        name: qt-${{ env.VERSION }}.tar.zst
+
+    - name: Extract (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        # Extract
+        Set-MpPreference -DisableRealtimeMonitoring $true
+        Set-MpPreference -DisableBehaviorMonitoring $true
+        Set-MpPreference -DisableArchiveScanning $true
+
+        tar xf qt-${{ env.VERSION }}.tar.zst
+
+    - name: Extract (UNIX)
+      if: runner.os != 'Windows'
+      shell: ${{ inputs.shell }}
+      run: |
+        # Extract
+        tar xf qt-${{ env.VERSION }}.tar.zst
+
+    - name: Patch Source Tree
+      shell: ${{ inputs.shell }}
+      run: ./tools/patch.sh
+      env:
+        PLATFORM: ${{ inputs.platform }}
+        ARCH: ${{ inputs.arch }}
+
+    - name: Configure
+      shell: ${{ inputs.shell }}
+      run: ./tools/configure.sh
+      env:
+        PLATFORM: ${{ inputs.platform }}
+        ARCH: ${{ inputs.arch }}
+
+    - name: Build
+      shell: ${{ inputs.build-shell }}
+      run: cmake --build build --parallel
+      env:
+        PLATFORM: ${{ inputs.platform }}
+        ARCH: ${{ inputs.arch }}
+
+    - name: Package
+      shell: ${{ inputs.shell }}
+      run: |
+        # Package
+        ./tools/package.sh
+      env:
+        PLATFORM: ${{ inputs.platform }}
+        ARCH: ${{ inputs.arch }}
+        PKGNAME: ${{ inputs.label }}
+
+    - name: Upload
+      uses: ./.github/workflows/upload
+      with:
+        repo: ${{ env.UPLOAD_REPO }}
+        version: ${{ env.VERSION }}
+        release: ${{ env.UPLOAD_RELEASE }}
+        artifact: ${{ inputs.label }}-${{ inputs.arch }}
+        token: ${{ env.GH_TOKEN }}

@@ -7,20 +7,10 @@ on:
 
 
 jobs:
-  qt-6-7-3:
-    name: Qt 6.7.3
-    uses: ./.github/workflows/platforms.yml
-    with:
-      build-windows: false
-      build-linux: false
-      build-macos: true
-      version: 6.7.3
-      release: false
-      submodules: qtbase
-
   qt-6-11-1:
     name: Qt 6.11.0
-    uses: ./.github/workflows/platforms.yml
+    uses: ./.github/workflows/build.yml
+    secrets: inherit
     with:
       build-windows: true
       build-linux: true
