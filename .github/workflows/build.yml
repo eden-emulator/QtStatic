@@ -63,8 +63,8 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: source
-          path: build
-          include-hidden-files: true
+          path: qt-${{ env.VERSION }}.tar.zst
+          archive: false
 
   windows:
     needs: [download]
@@ -148,6 +148,7 @@ jobs:
         with:
           arch: ${{ matrix.os.arch }}
           platform: ${{ matrix.platform }}
+          label: ${{ matrix.platform }}
 
   arch:
     needs: [download]
@@ -230,6 +231,7 @@ jobs:
         with:
           arch: ${{ matrix.arch }}
           platform: linux
+          label: linux
 
   macos:
     needs: [download]
@@ -264,6 +266,7 @@ jobs:
         with:
           arch: universal
           platform: macos
+          label: macos
 
   release:
     name: Release

@@ -18,8 +18,22 @@ runs:
     - name: Download
       uses: actions/download-artifact@v8
       with:
-        name: source
-        path: build
+        name: qt-${{ env.VERSION }}.tar.zst
+
+    - name: Extract (Windows)
+      if: runner.os == 'Windows'
+      shell: pwsh
+      run: |
+        Set-MpPreference -DisableRealtimeMonitoring $true
+        Set-MpPreference -DisableBehaviorMonitoring $true
+        Set-MpPreference -DisableArchiveScanning $true
+
+        tar xf qt-${{ env.VERSION }}.tar.zst -C build
+
+    - name: Extract (UNIX)
+      if: runner.os != 'Windows'
+      shell: bash
+      run: tar xf qt-${{ env.VERSION }}.tar.zst -C build
 
     - name: Configure
       shell: bash
