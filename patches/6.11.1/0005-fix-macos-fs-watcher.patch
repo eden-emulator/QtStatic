@@ -1,0 +1,39 @@
+Fixes two issues.
+- Calling `addPaths` would erroneously fire the directoryChanged signal some short amount of time after the call.
+  - This was caused by checkDir including hidden files, while scanForDirEntries did not.
+- Moving a file into a watched folder via Finder would cause the signal to fire twice.
+  - Finder moves the file into the directory first, then updates .DS_Store afterwards, triggering the event twice.
+  - Fixed by moving the isSameTimestampAndMode check to the else block. When the .DS_Store change occurs, the directory keeps the same timestamp and mode, so dirChanged itself no longer gets set to true, meaning the signal is not re-fired.
+
+diff --git a/qtbase/src/corelib/io/qfilesystemwatcher_fsevents.mm b/qtbase/src/corelib/io/qfilesystemwatcher_fsevents.mm
+index 0cbb808..e554f4d 100644
+--- a/qtbase/src/corelib/io/qfilesystemwatcher_fsevents.mm
++++ b/qtbase/src/corelib/io/qfilesystemwatcher_fsevents.mm
+@@ -60,13 +60,12 @@ static void callBackFunction(ConstFSEventStreamRef streamRef,
+         needsRestart |= derefPath(info.watchedPath);
+         emit emitDirectoryChanged(info.origPath, true);
+         it = watchingState.watchedDirectories.erase(it);
+-    } else if (!isSameTimestampAndMode(st, info)) {
+-        info.ctime = st.st_ctimespec;
+-        info.mode = st.st_mode;
+-        emit emitDirectoryChanged(info.origPath, false);
+-        ++it;
+     } else {
+-        bool dirChanged = false;
++        bool dirChanged = !isSameTimestampAndMode(st, info);
++        if (dirChanged) {
++            info.ctime = st.st_ctimespec;
++            info.mode = st.st_mode;
++        }
+         InfoByName &entries = it->entries;
+         // check known entries:
+         for (InfoByName::iterator i = entries.begin(); i != entries.end(); ) {
+@@ -538,7 +537,7 @@ static void callBackFunction(ConstFSEventStreamRef streamRef,
+ {
+     InfoByName entries;
+
+-    QDirIterator it(path);
++    QDirIterator it(path, QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot | QDir::Hidden);
+     while (it.hasNext()) {
+         it.next();
+         QString entryName = it.filePath();
