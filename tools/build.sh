@@ -35,6 +35,26 @@ if linux; then
 	. deps/openssl.sh
 fi
 
+# get submodules to skip
+skip_submodules() {
+	#########################################
+	# Skipped submodules.                   #
+	#########################################
+
+	skippable=(qtlanguageserver qtquicktimeline qtactiveqt qtquick3dphysics qtdoc qt5compat qtquick3d qtmultimedia qtdeclarative)
+	declare -a newskip
+	for i in "${skippable[@]}"; do
+		if ! echo "$SUBMODULES" | grep "$i" >/dev/null 2>&1; then
+			newskip+=("$i")
+		fi
+	done
+
+	IFS=,
+	SKIP="${newskip[*]}"
+	export SKIP
+	IFS=" "
+}
+
 # cmake
 configure() {
 	_group "Setting up configure flags"
@@ -68,7 +88,7 @@ configure() {
 	# PIC/PIE handling
 	case "$PLATFORM" in
 		openbsd|linux) FLAGS="$FLAGS -fPIC" ;;
-		freebsd|macos|mingw) FLAGS="$FLAGS -fno-pie" ;;
+		freebsd|macos|ios|mingw) FLAGS="$FLAGS -fno-pie" ;;
 		*) ;;
 	esac
 
@@ -78,6 +98,7 @@ configure() {
 	case "$PLATFORM" in
 		mingw|windows) dqpa=windows ;;
 		macos) dqpa=cocoa ;;
+		ios) dqpa=ios ;;
 		linux) dqpa=xcb
 			CONFIG+=(
 				-xcb
@@ -106,7 +127,8 @@ configure() {
 	# backends
 	if [ "$multimedia" = true ]; then
 		case "$PLATFORM" in
-			mingw|windows) ;;
+			# TODO(crueter): Figure out iOS FFmpeg situation
+			mingw|windows|ios) ;;
 			macos) FEATURES+=(avfoundation videotoolbox) ;;
 			*)
 				FEATURES+=(pulseaudio)
@@ -144,7 +166,7 @@ configure() {
 		export PKG_CONFIG_PATH="$OPENSSL_DIR/lib/pkgconfig:$PKG_CONFIG_PATH"
 
 		echo "-- * OpenSSL dir: $OPENSSL_DIR"
-	elif macos; then
+	elif macos || ios; then
 		FEATURES+=(securetransport)
 		DISABLED_FEATURES+=(openssl)
 	elif windows; then
@@ -197,6 +219,15 @@ configure() {
 
 	# also, gc-binaries can't be done on shared
 	[ "$SHARED" = true ] || CONFIG+=(-gc-binaries)
+
+	# Cross comp builds need a specific target and host path.
+	if [ "$CROSS" = true ]; then
+		CONFIG+=(-qt-host-path "$QT_HOST_PATH")
+		CMAKE+=(-DQT_HOST_PATH_CMAKE_DIR="$QT_HOST_PATH"/lib/cmake)
+		case "$PLATFORM" in
+			ios) CONFIG+=(-platform macx-ios-clang)
+		esac
+	fi
 
 	#########################################
 	# Options passed directly to configure. #
@@ -276,21 +307,7 @@ configure() {
 
 	CONFIG+=(-submodules "$SUBMODULES")
 
-	#########################################
-	# Skipped submodules.                   #
-	#########################################
-
-	skippable=(qtlanguageserver qtquicktimeline qtactiveqt qtquick3dphysics qtdoc qt5compat qtquick3d qtmultimedia qtdeclarative)
-	declare -a newskip
-	for i in "${skippable[@]}"; do
-		if ! echo "$SUBMODULES" | grep "$i" >/dev/null 2>&1; then
-			newskip+=("$i")
-		fi
-	done
-
-	IFS=,
-	SKIP="${newskip[*]}"
-
+	skip_submodules
 	if [ -n "$SKIP" ]; then
 		CONFIG+=(-skip "$SKIP")
 	fi
@@ -302,7 +319,7 @@ configure() {
 	# all of these are just garbage collection basically, also identical code folding
 	case "$PLATFORM" in
 		windows) LDFLAGS+="/OPT:REF /OPT:ICF" ;;
-		macos) LDFLAGS+="-Wl,-dead_strip -Wl,-dead_strip" ;;
+		macos|ios) LDFLAGS+="-Wl,-dead_strip -Wl,-dead_strip" ;;
 		*) LDFLAGS+="-Wl,--gc-sections" ;;
 	esac
 
@@ -362,6 +379,47 @@ configure() {
 build() {
     _group "Building $PRETTY_NAME"
     cmake --build . --parallel
+	_end
+}
+
+# minimal host qt
+build_host() {
+	_group "Configuring host Qt"
+	host="$ROOTDIR/$BUILD_DIR/host"
+	ins="$ROOTDIR/$BUILD_DIR/host-install"
+	mkdir -p "$host"
+
+	pushd "$host"
+
+	## SUBMODULES ##
+	skip_submodules
+	config=(-submodules "$SUBMODULES")
+	if [ -n "$SKIP" ]; then
+		config+=(-skip "$SKIP")
+	fi
+
+	## CCACHE ##
+	if [ "${CCACHE:-true}" = true ]; then
+		echo "-- Using ccache at: $CCACHE_PATH"
+
+		cmake+=(
+			-DCMAKE_CXX_COMPILER_LAUNCHER="${CCACHE_PATH}"
+			-DCMAKE_C_COMPILER_LAUNCHER="${CCACHE_PATH}"
+		)
+	fi
+
+	"$ROOTDIR/$BUILD_DIR/$DIRECTORY"/configure -developer-build -nomake tests -skip qtdoc \
+		-no-feature-doc_snippets "${config[@]}" -- "${cmake[@]}"
+	_end
+
+	_group "Building host Qt"
+
+	cmake --build . --target host_tools
+	cmake --install . --prefix "$ins"
+	export QT_HOST_PATH="$ins"
+	popd
+
+	_end
 }
 
 ## Packaging ##
@@ -395,6 +453,11 @@ cd "$ROOTDIR/$BUILD_DIR"
 extract
 
 rm -f CMakeCache.txt
+
+## cross comp host build ##
+if [ "$CROSS" = true ]; then
+	build_host
+fi
 
 ## Configure ##
 cd "$ROOTDIR/$BUILD_DIR/$DIRECTORY"

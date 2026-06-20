@@ -16,7 +16,7 @@ jobs:
     with:
       build-windows: false
       build-linux: false
-      build-macos: true
+      build-ios: false
       version: 6.7.3
       release: true
       submodules: qtbase,qttools,qtcharts
@@ -27,9 +27,6 @@ jobs:
     uses: ./.github/workflows/platforms.yml
     secrets: inherit
     with:
-      build-windows: true
-      build-linux: true
-      build-macos: true
       version: 6.11.1
       release: true
       submodules: qtbase,qttools,qtcharts

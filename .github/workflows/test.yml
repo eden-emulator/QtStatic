@@ -13,7 +13,7 @@ jobs:
     with:
       build-windows: false
       build-linux: false
-      build-macos: true
+      build-ios: false
       version: 6.7.3
       release: false
       submodules: qtbase
@@ -22,9 +22,6 @@ jobs:
     name: Qt 6.11.0
     uses: ./.github/workflows/platforms.yml
     with:
-      build-windows: true
-      build-linux: true
-      build-macos: true
       version: 6.11.1
       release: false
       submodules: qtbase,qttools

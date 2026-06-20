@@ -15,6 +15,10 @@ on:
         description: build macOS
         type: boolean
         default: true
+      build-ios:
+        description: build iOS
+        type: boolean
+        default: true
       windows-runner:
         description: windows runner to use for amd64
         type: string
@@ -266,6 +270,49 @@ jobs:
           version: ${{ inputs.version }}
           release: ${{ inputs.release }}
           artifact: macos-universal
+          token: ${{ secrets.GH_TOKEN }}
+
+  ios:
+    if: ${{ inputs.build-ios }}
+    name: "iOS (aarch64)"
+    runs-on: macos-latest
+    strategy:
+      fail-fast: false
+
+    env:
+      PLATFORM: ios
+      ARCH: aarch64
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          submodules: recursive
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@main
+        with:
+          key: ${{ env.PLATFORM }}-${{ env.ARCH }}-${{ inputs.version }}-${{ inputs.repo }}
+          restore-keys: ${{ env.PLATFORM }}-${{ env.ARCH }}-${{ inputs.version }}-${{ inputs.repo }}
+          install: binary
+          max-size: 2G
+
+      - name: Get Dependencies
+        run: |
+          chmod a+x ./deps/macos.sh
+          ./deps/macos.sh
+
+      - name: Build
+        run: |
+          chmod a+x ./tools/build.sh
+          ./tools/build.sh
+
+      - name: Upload
+        uses: ./.github/workflows/upload
+        with:
+          repo: ${{ inputs.repo }}
+          version: ${{ inputs.version }}
+          release: ${{ inputs.release }}
+          artifact: ios-aarch64
           token: ${{ secrets.GH_TOKEN }}
 
   release:

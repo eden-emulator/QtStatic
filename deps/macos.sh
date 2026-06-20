@@ -1,3 +1,3 @@
 #!/bin/sh -e
 
-brew install cmake git unzip vulkan-headers ninja llvm zstd
+brew install cmake git vulkan-headers ninja llvm zstd
